@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>多模态大模型深度技术白皮书｜架构、训练与工程实践</title>
+<style>
+:root{--paper:#f7f8f7;--surface:#fff;--ink:#183046;--muted:#5e7080;--line:#dce5e7;--teal:#087d78;--blue:#255f9c;--orange:#c46b2e;--soft:#eaf5f3;--code:#142638;--shadow:0 10px 35px rgba(20,48,65,.05)}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:30px}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.82 system-ui,-apple-system,"Segoe UI","Noto Sans CJK SC","Microsoft YaHei",sans-serif}
+button,a{touch-action:manipulation}a{color:var(--blue);text-underline-offset:3px}a:hover{color:var(--teal)}a:focus-visible,button:focus-visible{outline:3px solid var(--orange);outline-offset:3px}p{margin:0 0 1.15em}strong{color:var(--ink)}code,kbd{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.89em}p code,li code,td code{background:#edf2f3;padding:.1em .3em;border-radius:3px;overflow-wrap:anywhere}
+.masthead{background:#112c40;color:#e7f3f3;padding:42px max(24px,calc((100vw - 1300px)/2)) 38px;position:relative;overflow:hidden}.masthead:after{content:"";position:absolute;right:-5rem;top:-11rem;width:33rem;height:33rem;border:1px solid #ffffff23;border-radius:50%;box-shadow:0 0 0 90px #ffffff05,0 0 0 180px #ffffff04;pointer-events:none}.masthead h1{font-size:clamp(2rem,4vw,3.45rem);line-height:1.23;letter-spacing:.02em;margin:0 0 .35em;position:relative;z-index:1}.masthead p{color:#c6dadc;max-width:770px;font-size:1.07rem;margin:0;position:relative;z-index:1}.masthead .meta{margin-top:1.5rem;color:#a4c5c9;font-size:.84rem}
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:clamp(24px,4vw,64px);max-width:1390px;padding:0 30px 90px;margin:0 auto}.toc{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow:auto;padding:31px 0}.toc strong{font-size:.76rem;letter-spacing:.13em;color:var(--teal)}.toc a{display:block;text-decoration:none;color:var(--muted);font-size:.87rem;line-height:1.4;padding:9px 12px;border-left:2px solid transparent}.toc a:hover,.toc a.active{border-left-color:var(--teal);background:var(--soft);color:var(--ink)}
+main{max-width:940px;min-width:0;padding-top:42px}.lede{font-size:1.12rem;color:#385569;border-left:4px solid var(--teal);padding:4px 0 4px 20px;margin-bottom:2rem}article section{border-top:1px solid var(--line);padding:22px 0 18px}h2,h3,h4{line-height:1.35;letter-spacing:-.015em;scroll-margin-top:24px}h2{font-size:clamp(1.55rem,2.7vw,2.1rem);margin:21px 0 23px}h3{font-size:1.31rem;margin:2.15rem 0 1rem;color:#0c5b69}h4{font-size:1.07rem;margin:1.6rem 0 .65rem}h2 .num{color:var(--teal);font:600 .67em ui-monospace,monospace;margin-right:.8em}ul,ol{padding-left:1.5em;margin:0 0 1.35em}li{padding-left:.18em;margin:.38em 0}li::marker{color:var(--teal)}
+.callout{border-left:4px solid var(--teal);background:var(--soft);padding:18px 22px;margin:22px 0;border-radius:0 6px 6px 0}.callout.warn{border-color:var(--orange);background:#fff5eb}.callout p:last-child{margin:0}.eyebrow{font-size:.75rem;letter-spacing:.08em;color:var(--teal);font-weight:800;text-transform:uppercase;display:block;margin-bottom:5px}.formula{background:#eef3f5;border:1px solid var(--line);border-radius:6px;padding:14px 20px;margin:19px 0;overflow-x:auto;white-space:nowrap;font:1rem/1.6 ui-monospace,monospace;color:#16465c}.formula small{display:block;color:var(--muted);font: .85rem/1.6 system-ui,sans-serif;white-space:normal}
+.figure{border:1px solid var(--line);background:var(--surface);border-radius:8px;margin:28px 0;padding:20px;box-shadow:var(--shadow)}.figure svg{display:block;width:100%;height:auto}.figure figcaption{border-top:1px solid var(--line);padding-top:12px;margin-top:13px;color:var(--muted);font-size:.87rem;line-height:1.6}.figure svg text{font-family:system-ui,"Noto Sans CJK SC",sans-serif}.figure svg .label{font-size:16px;fill:#183046;font-weight:700}.figure svg .detail{font-size:12px;fill:#526b7b}.figure svg .node{fill:#eff7f6;stroke:#6eaaa9;stroke-width:1.5}.figure svg .node-b{fill:#edf3fc;stroke:#7aa3d0;stroke-width:1.5}.figure svg .node-o{fill:#fff4e7;stroke:#d7a36b;stroke-width:1.5}.figure svg .arr{stroke:#527989;stroke-width:2;fill:none;marker-end:url(#arrow)}.figure svg .dash{stroke-dasharray:5 4}
+.stack-figure{background:var(--surface)}.stack-figure h4{margin:0 0 12px;font-size:1rem;color:var(--teal)}.stack-grid{display:grid;grid-template-columns:repeat(var(--tracks,1),minmax(0,1fr));gap:18px}.stack-track{display:flex;flex-direction:column-reverse;gap:24px;list-style:none;padding:0;margin:0}.stack-track li{position:relative;margin:0;padding:12px 15px;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:5px;background:var(--paper);line-height:1.45;min-height:58px}.stack-track li:first-child{border-left-color:var(--teal)}.stack-track li:last-child{border-left-color:var(--orange)}.stack-track li:not(:first-child)::after{content:"↑";position:absolute;bottom:-25px;left:calc(50% - 6px);font:700 20px/20px system-ui;color:var(--teal)}.stack-track b{display:block;font-size:.94rem}.stack-track small{display:block;font-size:.8rem;color:var(--muted);margin-top:4px;line-height:1.45}.stack-grid>div>h4{margin:0 0 12px}.stack-figure figcaption{margin-top:18px}.stack-figure code{overflow-wrap:anywhere}
+.table-wrap{overflow-x:auto;margin:22px 0;border:1px solid var(--line);border-radius:7px;background:var(--surface)}table{border-collapse:collapse;width:100%;font-size:.9rem;line-height:1.58}th,td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#eaf1f2;color:#173e4d;font-size:.83rem;white-space:nowrap}tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:#fafcfc}caption{text-align:left;padding:13px 15px;font-weight:700;color:#18435a}
+.timeline{border-left:3px solid var(--teal);margin:24px 0 30px 10px;padding-left:22px}.timeline>div{position:relative;margin:0 0 18px}.timeline>div:before{content:"";position:absolute;left:-30px;top:.72em;width:12px;height:12px;border-radius:50%;background:var(--teal);border:3px solid var(--paper)}.timeline time{font-weight:800;color:var(--teal);font-variant-numeric:tabular-nums}.timeline p{margin:2px 0 0;color:var(--muted);font-size:.9rem}.timeline a{text-decoration:none}.io{font:600 .9rem/1.6 ui-monospace,monospace;color:var(--teal);margin:.2em 0 1em}.io code{font:inherit}.type-block{border-top:1px dashed var(--line);padding-top:4px;margin-top:30px}.type-block h3{margin-top:20px}.type-block .source{display:block;margin:-6px 0 15px}
+pre{background:var(--code);color:#e4f3f2;border-radius:7px;padding:18px 20px;overflow:auto;line-height:1.64;font-size:.86rem;margin:18px 0 26px;tab-size:2}pre code{font-size:inherit;background:none}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:20px 0}.grid>div{background:var(--surface);border:1px solid var(--line);padding:16px 18px;border-radius:6px}.grid h4{margin:0 0 6px}.grid p{margin:0;color:var(--muted);font-size:.92rem}.source{font-size:.8rem;color:var(--muted)}.source a{text-decoration:none}.refs{font-size:.9rem}.refs li{margin:0 0 12px;overflow-wrap:anywhere}.toolbar{display:flex;align-items:center;gap:10px;margin:14px 0}.toolbar button{cursor:pointer;background:var(--surface);border:1px solid var(--line);padding:7px 13px;color:var(--ink);border-radius:4px;font:inherit;font-size:.83rem;white-space:nowrap}.toolbar button:hover{background:var(--soft)}.back{position:fixed;right:24px;bottom:20px;background:var(--teal);color:white;padding:7px 12px;text-decoration:none;border-radius:4px;box-shadow:var(--shadow);font-size:.83rem}.back:hover{background:#096960;color:white}footer{color:var(--muted);font-size:.82rem;padding:35px 0}
+@media(max-width:900px){.layout{display:block;padding:0 22px 60px}.toc{position:static;max-height:none;padding:18px 0 0;border-bottom:1px solid var(--line)}.toc nav{display:flex;overflow-x:auto;padding-bottom:12px}.toc a{white-space:nowrap;border-left:0;border-bottom:2px solid transparent}.toc a.active{border-bottom-color:var(--teal)}main{padding-top:25px}.masthead{padding:42px 22px 32px}}@media(max-width:600px){body{font-size:15px}.grid,.stack-grid{grid-template-columns:1fr}.figure{padding:10px;margin:22px -10px}.figure svg{min-width:650px}.figure{overflow-x:auto}.stack-figure{overflow:visible}.masthead h1{font-size:2rem}th,td{padding:9px 12px}}@media(prefers-color-scheme:dark){:root{--paper:#101d27;--surface:#192b38;--ink:#e5eef0;--muted:#adc2cc;--line:#36505b;--teal:#5dd7c6;--blue:#9dc8ff;--orange:#e9aa71;--soft:#183a3d;--code:#0d1720}strong{color:var(--ink)}p code,li code,td code,.formula{background:#213844;color:#d9eef2}th{background:#25424d;color:#e5eef0}tbody tr:nth-child(even){background:#1b313d}.figure svg .label{fill:#183046}.callout.warn{background:#382d27}}@media print{body{background:white;color:#111;font-size:10.5pt}.masthead{background:none;color:#111;padding:0}.masthead p,.masthead .meta{color:#444}.layout{display:block;padding:0}.toc,.toolbar,.back{display:none}main{max-width:none;padding:0}section{break-before:page}h3,h4,.figure,.table-wrap,pre{break-inside:avoid}.figure{box-shadow:none}.figure svg{max-height:16cm}a{color:#111;text-decoration:none}}
+</style>
+</head>
+<body id="top">
+<header class="masthead"><h1>多模态大模型<br>深度技术白皮书</h1><p>里程碑模型 → 输入输出范式 → 算子与模型案例 → 训练、部署和验收。从底部输入到顶部输出阅读各架构，区分论文实现与工程推断。</p><p class="meta">技术深化版 · 2026-10-26 修订 · 页面可离线阅读 · 面向算法 / 训练 / 推理工程师</p></header>
+<div class="layout"><aside class="toc" aria-label="章节目录"><strong>阅读目录</strong><nav>
+<a href="#milestones">时间线</a><a href="#terms">术语速查</a><a href="#taxonomy">六类任务</a><a href="#chap1">01　问题与演进</a><a href="#chap2">02　数学与信息流</a><a href="#chap3">03　架构深拆</a><a href="#operator-stack">逐算子自下而上</a><a href="#qwen-operators">Qwen 算子链</a><a href="#chap4">04　训练调优</a><a href="#chap5">05　模型谱系</a><a href="#open-models">开放模型对照</a><a href="#chap6">06　部署优化</a><a href="#qwen-deployment">Qwen 部署</a><a href="#chap7">07　评测与风险</a><a href="#chap8">08　落地路线</a><a href="#references">论文与出处</a>
+</nav></aside><main><p class="lede">先看<strong>什么时候出现了哪些关键架构</strong>，再按输入与输出模态分类：只理解并回答、生成图文混排、生成视频，及其带图像/视频条件的扩展。它们共享“跨模态对齐”的问题，却未必共享编码器、训练目标和输出解码器。</p>
+<div class="toolbar"><button type="button" onclick="window.print()">打印 / 导出 PDF</button><span class="source">示意图为本文重绘；数值若未注明来源均为公式推算或实验设计示例。</span></div>
+<article>
+<section aria-labelledby="milestones"><h2 id="milestones"><span class="num">00 /</span>先看时间线：典型模型如何走到多模态统一</h2>
+<p>以下按<strong>论文首次公开的年/月</strong>排列，而非当前 PDF 修订日期；“里程碑”是本文选取的代表性设计节点，不是按性能排序，也不意味着后者全面取代前者。视觉理解和视觉生成两条线先并行发展，2023–2024 年出现图文混排与统一 token 路线。<a href="#ref1">[1]</a><a href="#ref15">[15]</a></p>
+<div class="timeline" aria-label="多模态模型发展时间线">
+<div><time>2020</time><p><a href="#milestone-table">ViT</a>（Vision Transformer，视觉 Transformer）：把图像切为 patch 序列，形成后续视觉编码器基座。</p></div>
+<div><time>2021</time><p><a href="#milestone-table">CLIP</a>（Contrastive Language–Image Pre-training，对比式图文预训练）：大规模图文对比学习；<a href="#milestone-table">LDM</a>（Latent Diffusion Model，潜空间扩散模型）：降低图像生成成本。</p></div>
+<div><time>2022</time><p><a href="#milestone-table">BLIP</a>（Bootstrapping Language–Image Pre-training，自举式图文预训练）：清洗噪声图文数据，统一理解与文本生成。</p></div>
+<div><time>2023</time><p><a href="#milestone-table">BLIP-2 → LLaVA → MiniGPT-4 → Emu → Qwen-VL → VideoPoet</a>：LLaVA = Large Language and Vision Assistant（大型语言与视觉助手）；GPT = Generative Pre-trained Transformer（生成式预训练 Transformer）；Qwen-VL 中 VL = Vision-Language（视觉语言）。这一年从冻结桥接、视觉指令调优，走到混排与视频生成。</p></div>
+<div><time>2024</time><p><a href="#milestone-table">Chameleon → OneVision → CogVideoX → Qwen2-VL → Emu3 → Janus</a>：早期融合、动态分辨率、视频扩散与统一视觉生成分叉。</p></div>
+<div><time>2025</time><p><a href="#milestone-table">LLaVA-OneVision-1.5</a>：更完整的开放训练配方与视觉数据治理，但仍属于理解型模型。</p></div>
+<div><time>2026</time><p><a href="#open-models">Qwen3.5 / OneVision-2 / MiniCPM-V 4.7</a>：混合注意力、视频稀疏 token 与早期视觉压缩，详见后文官方仓库对照；时间线主体仍按原始论文节点排列。</p></div>
+</div>
+<div class="table-wrap" id="milestone-table"><table><caption>逐个看：代表性模型解决了什么、仍没有解决什么</caption><thead><tr><th>首次公开</th><th>模型 / 主线</th><th>关键机制与解决的问题</th><th>不要误读为</th></tr></thead><tbody>
+<tr><td>2020/10</td><td>ViT · 表征</td><td>图像 patch + Transformer；使视觉编码可沿序列模型扩展。<a href="#ref4">[4]</a></td><td>具备问答或生成能力</td></tr>
+<tr><td>2021/02</td><td>CLIP · 对齐</td><td>图像/文本双塔对比，支持零样本分类/检索。<a href="#ref3">[3]</a></td><td>能直接输出长文本解释</td></tr>
+<tr><td>2021/12</td><td>LDM · 生成</td><td>VAE（Variational Autoencoder，变分自编码器）潜变量 + 条件扩散；让高分辨率生成的计算更可控。<a href="#ref16">[16]</a></td><td>理解图像证据或图文混排</td></tr>
+<tr><td>2022/01</td><td>BLIP · 理解/文本生成</td><td>CapFilt（Captioning and Filtering，描述生成与过滤）处理噪声图文，并统一检索、描述等任务。<a href="#ref5">[5]</a></td><td>通用图像/视频生成器</td></tr>
+<tr><td>2023/01</td><td>BLIP-2 · 桥接</td><td>Q-Former（Querying Transformer，查询式 Transformer）抽取固定长度视觉信息，连接冻结视觉和语言主干。<a href="#ref6">[6]</a></td><td>输出图像 token</td></tr>
+<tr><td>2023/04</td><td>LLaVA · 指令</td><td>简洁投影器 + 视觉指令数据，把看图描述转为可对话问答。<a href="#ref8">[8]</a></td><td>具有图像解码头</td></tr>
+<tr><td>2023/04</td><td>MiniGPT-4 · 指令</td><td>冻结主干对齐后用精选长描述缓解回答不自然。<a href="#ref7">[7]</a></td><td>单靠少量样本掌握所有视觉任务</td></tr>
+<tr><td>2023/07</td><td>Emu · 图文混排</td><td>混排序列中预测下一文本 token 或视觉 embedding，支持上下文图像/文本生成。<a href="#ref17">[17]</a></td><td>普通 LLaVA 添加图片占位符</td></tr>
+<tr><td>2023/08</td><td>Qwen-VL · 中文/定位</td><td>位置感知 adapter 和多阶段训练引入局部定位能力。<a href="#ref11">[11]</a></td><td>天然支持可变长高分辨率</td></tr>
+<tr><td>2023/12</td><td>VideoPoet · 视频生成</td><td>离散视频 token 自回归生成，以文本嵌入、图像、视频等为条件。<a href="#ref18">[18]</a></td><td>必然同步输出解说文字</td></tr>
+<tr><td>2024/05</td><td>Chameleon · 混排统一</td><td>图像/文本离散 token 早期融合，支持任意图文顺序输入和输出。<a href="#ref19">[19]</a></td><td>原生视频生成模型</td></tr>
+<tr><td>2024/08</td><td>LLaVA-OneVision · 视频理解</td><td>单图、多图与视频任务迁移，输出仍主要为文本。<a href="#ref9">[9]</a></td><td>视频生成器</td></tr>
+<tr><td>2024/08</td><td>CogVideoX · 视频扩散</td><td>3D VAE + 文本条件扩散 Transformer，增强长时序连贯性。<a href="#ref20">[20]</a></td><td>视频问答主干</td></tr>
+<tr><td>2024/09</td><td>Qwen2-VL · 变长理解</td><td>2D-RoPE（2D Rotary Position Embedding，二维旋转位置编码）与 M-RoPE（Multimodal Rotary Position Embedding，多模态旋转位置编码）配合动态分辨率改善图像/视频感知。<a href="#ref12">[12]</a></td><td>图像/视频生成头</td></tr>
+<tr><td>2024/09</td><td>Emu3 · 离散统一</td><td>图像/文本/视频编码为离散 token，以统一 next-token 目标学习理解与生成。<a href="#ref21">[21]</a></td><td>所有任务质量或成本相同</td></tr>
+<tr><td>2024/10</td><td>Janus · 双视觉路径</td><td>理解编码与生成编码分流，复用一个自回归主干以缓解表示冲突。<a href="#ref22">[22]</a></td><td>所有混排/视频任务开箱可用</td></tr>
+<tr><td>2025/09</td><td>OneVision-1.5 · 训练体系</td><td>RICE（Region-Aware Cluster Discrimination，区域感知聚类判别）-ViT、中间训练、样本打包与可选 RL（Reinforcement Learning，强化学习），优化开放可复现训练。<a href="#ref10">[10]</a></td><td>升级为视频生成模型</td></tr>
+</tbody></table></div><p class="source">时间按原始 arXiv 提交月份。ViT/CLIP/BLIP/BLIP-2/LLaVA 等采用用户本地论文；LDM/Emu/VideoPoet/Chameleon/CogVideoX/Emu3/Janus 采用新增原始论文链接。左右路线并行，不是单一路径的线性“代际替换”。</p></section>
+<section aria-labelledby="terms"><h2 id="terms"><span class="num">阅读辅助 /</span>首次缩写速查</h2><p>模型名已在时间线首次出现处写出可确认的英文全称；以下缩写从本节起首次使用时直接给出全称。专有名称（如 Qwen、Emu）不是强行拆词的学术缩写。后文保留简写以免每个公式重复展开。</p>
+<div class="table-wrap"><table><thead><tr><th>类别</th><th>英文全称与文中含义</th></tr></thead><tbody>
+<tr><td>模型与任务</td><td><strong>LLM</strong> = Large Language Model（大语言模型）；<strong>MLLM</strong> = Multimodal Large Language Model（多模态大语言模型）；<strong>VLM</strong> = Vision-Language Model（视觉语言模型）；<strong>MoE</strong> = Mixture of Experts（混合专家）；<strong>SigLIP</strong> = Sigmoid Loss for Language Image Pre-Training（以 Sigmoid 损失预训练图文表征）；<strong>OCR</strong> = Optical Character Recognition（光学字符识别）；<strong>VQA</strong> = Visual Question Answering（视觉问答）；<strong>CLS</strong> = Classification token（分类词元）。</td></tr>
+<tr><td>算子与注意力</td><td><strong>Q/K/V</strong> = Query / Key / Value（查询/键/值）；<strong>MHA</strong> = Multi-Head Attention（多头注意力）；<strong>GQA</strong> = Grouped-Query Attention（分组查询注意力）；<strong>MQA</strong> = Multi-Query Attention（多查询共享键值注意力）；<strong>SDPA</strong> = Scaled Dot-Product Attention（缩放点积注意力）；<strong>KV</strong> = Key–Value（键值，常指注意力缓存）；<strong>MLP</strong> = Multi-Layer Perceptron（多层感知机）；<strong>FFN</strong> = Feed-Forward Network（前馈网络）；<strong>RMSNorm</strong> = Root Mean Square Normalization（均方根归一化）；<strong>GELU</strong> = Gaussian Error Linear Unit（高斯误差线性单元）；<strong>SwiGLU</strong> = Swish-Gated Linear Unit（门控激活）；<strong>DiT</strong> = Diffusion Transformer（扩散 Transformer）；<strong>AR</strong> = Autoregressive（自回归）。</td></tr>
+<tr><td>训练目标</td><td><strong>CE</strong> = Cross-Entropy（交叉熵）；<strong>SFT</strong> = Supervised Fine-Tuning（监督微调）；<strong>ITC</strong> = Image-Text Contrastive（图文对比）；<strong>ITM</strong> = Image-Text Matching（图文匹配）；<strong>ITG</strong> = Image-Grounded Text Generation（图像条件文本生成）；<strong>LoRA</strong> = Low-Rank Adaptation（低秩适配）；<strong>ZeRO</strong> = Zero Redundancy Optimizer（零冗余优化器）；<strong>FSDP</strong> = Fully Sharded Data Parallel（全分片数据并行）；<strong>DPO</strong> = Direct Preference Optimization（直接偏好优化）；<strong>GRPO</strong> = Group Relative Policy Optimization（组相对策略优化）。</td></tr>
+<tr><td>硬件与验收</td><td><strong>CPU</strong> = Central Processing Unit（中央处理器）；<strong>GPU</strong> = Graphics Processing Unit（图形处理器）；<strong>API</strong> = Application Programming Interface（应用程序接口）；<strong>FLOPs</strong> = Floating-Point Operations（浮点运算次数）；<strong>TTFT</strong> = Time to First Token（首词元时延）；<strong>E2E</strong> = End-to-End（端到端）；<strong>OOM</strong> = Out of Memory（内存不足）；<strong>IoU</strong> = Intersection over Union（交并比）；<strong>F1</strong> = F1 score（精确率与召回率的调和平均）；<strong>p50 / p95 / p99</strong> = 第 50 / 95 / 99 百分位（尾延迟或尾输入规模）。</td></tr>
+</tbody></table></div><p class="source">缩写有上下文：图文对比训练中的 KV 指 Key/Value 张量，部署章节中的 KV cache 则是逐层缓存它们；“LLM 有一条注意力路”不是架构定义，见后文对照。</p></section>
+<section aria-labelledby="taxonomy"><h2 id="taxonomy"><span class="num">任务地图 /</span>六种输入→输出范式：区别不在“能读图”三个字</h2>
+<p>约定 <code>T</code>=文本，<code>I</code>=一张或多张图像，<code>V</code>=带时间顺序的视频；箭头左边是<strong>条件输入</strong>，右边是<strong>需要真正生成的输出</strong>。例如“视频→文字”不因为回答附带一张上传的缩略图就变成“视频→视频图文”；只有新生成或编辑的图像/视频进入结果，才算右侧视觉输出。六类是<strong>能力/产品任务分类，不是六种相互排斥的模型架构</strong>：一个统一模型可能覆盖多类；单一流水线也可串接多个专用模型。<a href="#ref15">[15]</a><a href="#ref19">[19]</a></p>
+<figure class="figure"><svg viewBox="0 0 850 425" role="img" aria-labelledby="ftax-title ftax-desc"><title id="ftax-title">六类多模态输入输出任务矩阵</title><desc id="ftax-desc">六行依次对照图文到文字、文字到图文、图文到图文、视频图文到文字、文字到视频图文、视频图文到视频图文；生成视觉输出需要图像或视频解码器。</desc><defs><marker id="arrow-tax" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#527989"/></marker></defs>
+<text class="detail" x="24" y="23">输入条件</text><text class="detail" x="324" y="23">核心处理</text><text class="detail" x="667" y="23">输出产物</text>
+<rect class="node-b" x="16" y="36" width="206" height="46" rx="6"/><text class="label" x="119" y="66" text-anchor="middle">图文 I + T</text><rect class="node" x="303" y="36" width="236" height="46" rx="6"/><text class="label" x="421" y="66" text-anchor="middle">视觉编码 + LLM</text><rect class="node-o" x="635" y="36" width="200" height="46" rx="6"/><text class="label" x="735" y="66" text-anchor="middle">文本 T</text><path class="arr" marker-end="url(#arrow-tax)" d="M222 59H299M539 59H631"/>
+<rect class="node-b" x="16" y="104" width="206" height="46" rx="6"/><text class="label" x="119" y="134" text-anchor="middle">文本 T</text><rect class="node" x="303" y="104" width="236" height="46" rx="6"/><text class="label" x="421" y="134" text-anchor="middle">混排 token / 图像解码</text><rect class="node-o" x="635" y="104" width="200" height="46" rx="6"/><text class="label" x="735" y="134" text-anchor="middle">文本 + 图像 T + I</text><path class="arr" marker-end="url(#arrow-tax)" d="M222 127H299M539 127H631"/>
+<rect class="node-b" x="16" y="172" width="206" height="46" rx="6"/><text class="label" x="119" y="202" text-anchor="middle">图文 I + T</text><rect class="node" x="303" y="172" width="236" height="46" rx="6"/><text class="label" x="421" y="202" text-anchor="middle">理解 → 保真图像编辑</text><rect class="node-o" x="635" y="172" width="200" height="46" rx="6"/><text class="label" x="735" y="202" text-anchor="middle">文本 + 新图 T + I</text><path class="arr" marker-end="url(#arrow-tax)" d="M222 195H299M539 195H631"/>
+<rect class="node-b" x="16" y="240" width="206" height="46" rx="6"/><text class="label" x="119" y="270" text-anchor="middle">视频 + 图文 V + I + T</text><rect class="node" x="303" y="240" width="236" height="46" rx="6"/><text class="label" x="421" y="270" text-anchor="middle">时空编码 + LLM</text><rect class="node-o" x="635" y="240" width="200" height="46" rx="6"/><text class="label" x="735" y="270" text-anchor="middle">文本 T</text><path class="arr" marker-end="url(#arrow-tax)" d="M222 263H299M539 263H631"/>
+<rect class="node-b" x="16" y="308" width="206" height="46" rx="6"/><text class="label" x="119" y="338" text-anchor="middle">文本 T</text><rect class="node" x="303" y="308" width="236" height="46" rx="6"/><text class="label" x="421" y="338" text-anchor="middle">脚本 / 视频生成器</text><rect class="node-o" x="635" y="308" width="200" height="46" rx="6"/><text class="label" x="735" y="338" text-anchor="middle">文本 + 视频图</text><path class="arr" marker-end="url(#arrow-tax)" d="M222 331H299M539 331H631"/>
+<rect class="node-b" x="16" y="376" width="206" height="46" rx="6"/><text class="label" x="119" y="406" text-anchor="middle">视频 + 图文 V + I + T</text><rect class="node" x="303" y="376" width="236" height="46" rx="6"/><text class="label" x="421" y="406" text-anchor="middle">理解 → 条件视频编辑</text><rect class="node-o" x="635" y="376" width="200" height="46" rx="6"/><text class="label" x="735" y="406" text-anchor="middle">文本 + 新视频图</text><path class="arr" marker-end="url(#arrow-tax)" d="M222 399H299M539 399H631"/></svg><figcaption>图 0a｜输入输出是任务契约，不是产品外壳。输出列的图像/视频必须由模型或生成子系统新生成；“视频图”含可选生成关键帧，并非所有论文都支持同时输出全部元素。</figcaption></figure>
+<div class="table-wrap"><table><caption>六类任务的最小能力、训练目标与常见架构</caption><thead><tr><th>任务</th><th>必须具备</th><th>主要训练目标</th><th>路线</th></tr></thead><tbody>
+<tr><td><a href="#type1">I + T → T</a></td><td>图像条件文本解码</td><td>答案 CE</td><td>LLaVA / BLIP-2 / Qwen2-VL</td></tr>
+<tr><td><a href="#type2">T → T + I</a></td><td>混排输出与图像解码</td><td>跨模态 next-token；或文本 + 扩散目标</td><td>Emu / Chameleon；组合式 LDM</td></tr>
+<tr><td><a href="#type3">I + T → T + I</a></td><td>读原图、编辑图与解释</td><td>混排 token；或条件去噪 + 文本 CE</td><td>Chameleon；VLM + 编辑器</td></tr>
+<tr><td><a href="#type4">V + I + T → T</a></td><td>时序理解与文本解码</td><td>时间条件答案 CE</td><td>OneVision / Qwen2-VL</td></tr>
+<tr><td><a href="#type5">T → T + V + I</a></td><td>视频解码与文字脚本</td><td>视频去噪或 token CE + 文字目标</td><td>VideoPoet / CogVideoX / Emu3 + 编排</td></tr>
+<tr><td><a href="#type6">V + I + T → T + V + I</a></td><td>读原视频并生成新视频</td><td>条件生成 + 保真 + 文本目标</td><td>VideoPoet 条件生成 + VLM/编排</td></tr>
+</tbody></table></div>
+<div class="callout warn"><span class="eyebrow">关于“图文”的口径</span><p>“文→图文”指<strong>生成新的图片并与生成文字混排</strong>，不是文→单图后在 UI 旁放回原提示词；“视频图文→视频图文”也要求生成或编辑新视频。能否同一次解码原生交错输出，必须分别核对论文与部署接口。任务矩阵和工程串接建议是本文归纳，不能反推某篇论文覆盖全部六类。</p></div>
+<div class="type-block" id="type1"><h3>Ⅰ｜图文 → 文：读图回答和证据抽取</h3><p class="io"><code>I + T<sub>prompt</sub> → T<sub>answer</sub></code></p>
+<p><strong>典型任务：</strong>“维修单的设备编号是多少？请注明所在区域。”图像经 ViT/CLIP/SigLIP/动态视觉编码器转为 patch 特征；投影器、Q-Former 或 patch merge 将其送入 LLM，文本 decoder 预测答案。训练重点是正确图文配对、局部细节与答案区域的交叉熵（CE）mask。LLaVA 的简洁投影、BLIP-2 的查询压缩与 Qwen2-VL 的动态分辨率，都在取舍视觉细节、上下文长度和训练成本。<a href="#ref6">[6]</a><a href="#ref8">[8]</a><a href="#ref12">[12]</a></p>
+<p><strong>架构边界与验收：</strong>模型会“看”也会“写”，但只有词表解码器，无法凭相同输出头生成像素。对于 OCR/表格，要检查 crop 后文字是否仍清晰；对于图片幻觉，以遮挡证据/替换图片的反事实样本验证视觉依赖。工程上优先把图像 token 展开与文本 mask 对齐，再做模型升级。</p></div>
+
+<div class="type-block" id="type2"><h3>Ⅱ｜文 → 图文：带插图的文章、故事和教程</h3><p class="io"><code>T<sub>prompt</sub> → (T₁, I₁, T₂, I₂, …)</code></p>
+<p><strong>与纯文→图不同：</strong>输出的文字、图片位置和引用关系本身就是目标。统一自回归路线将图像压为离散视觉 token，图文共享序列和边界标记；<code>p(z₁,…,zₙ | T) = ∏ p(zₖ | z&lt;ₖ,T)</code>，预测视觉 token 后由视觉 tokenizer 的解码器还原像素。Chameleon 支持任意顺序图文输入/生成；Emu 使用下一文本 token 分类或下一视觉 embedding 回归以支持混排上下文——两者建模方法不完全相同。<a href="#ref17">[17]</a><a href="#ref19">[19]</a></p>
+<p><strong>组合路线：</strong>LLM 先输出结构化段落、插图提示和图号，再由条件扩散图像模型生成 <code>I₁…Iₙ</code> 并插回正文。LDM 在自编码器潜空间去噪，用 cross-attention 注入文本条件；组合系统还需解决人物跨图一致、引用编号、失败重试与段落-插图对齐。<a href="#ref16">[16]</a> 这是<strong>工程编排</strong>，不是 LDM 单独能生成文章。</p></div>
+
+<div class="type-block" id="type3"><h3>Ⅲ｜图文 → 图文：看原图后编辑并解释</h3><p class="io"><code>I<sub>src</sub> + T<sub>edit</sub> → I<sub>dst</sub> + T<sub>explain</sub></code></p>
+<p><strong>典型任务：</strong>“保留原图人物和构图，把背景改成雨夜，并解释改动。”理解型主干抽取原图对象/区域；图像生成器以原图 latent、mask、边缘/深度或参考特征为条件生成目标图；文字端说明修改内容。若用统一 token 模型，需在交错序列中同时学习读入原图、生成新图和继续文本。Chameleon 是图文混排代表，但其论文<strong>不保证任意高精度局部编辑开箱可用</strong>；Janus 将理解与生成视觉编码器分开，缓解语义编码与像素重建的目标冲突。<a href="#ref19">[19]</a><a href="#ref22">[22]</a></p>
+<p><strong>损失和验收：</strong>组合式编辑用原图条件的去噪/flow 目标，另以 CE 训练解释；关键约束是未编辑区域、身份、版式和文字保持。简单文生图会“重画整张”，难保证原图保真；工程门禁建议分目标/非目标区域抽检，而不只看整体美感。</p></div>
+<div class="type-block" id="type4"><h3>Ⅳ｜视频图文 → 文：理解动作、事件与时间顺序</h3><p class="io"><code>V<sub>0:F</sub> + I<sub>ref</sub> + T<sub>question</sub> → T<sub>answer</sub></code></p>
+<p><strong>信息流：</strong>视频先按时间戳抽帧/分块，每个帧（可附参考图）送入视觉编码器，视觉 token 带帧序、二维位置及时间信息，再同问题进入 LLM。LLaVA-OneVision 在单图/多图/视频间做任务迁移；Qwen2-VL 的 M-RoPE 显式表示时间、高和宽的位置。它们输出<strong>文字</strong>，不是视频。<a href="#ref9">[9]</a><a href="#ref12">[12]</a></p>
+<p><strong>真正难点：</strong>取样频率过低会漏掉短动作，频率过高则令视觉 token、prefill 和 KV 成本上升；可先粗采样定位时间窗，再针对相关片段细采样，但必须把时间戳映射回原片源。训练以带帧序/时间标注的 QA、事件顺序和证据引用为主；评测要打乱帧序、替换关键帧，并分别测时间定位与回答事实性。参考图作为额外输入时，要防止把它误当视频当前帧。</p></div>
+
+<div class="type-block" id="type5"><h3>Ⅴ｜文 → 视频图文：把脚本变成连续画面和说明</h3><p class="io"><code>T<sub>brief</sub> → T<sub>script</sub> + V<sub>generated</sub> + I<sub>keyframes</sub></code></p>
+<p><strong>区别于上类：</strong>此时要生成新的时空信号。CogVideoX 路线先以 3D VAE 压缩时间与空间，把随机噪声潜变量交给文本条件扩散 Transformer 迭代去噪，最后解码视频；VideoPoet/Emu3 则把视频压为离散 token，由自回归模型预测后解码。两者均面临人物/背景跨帧一致性、运动合理性、长度/帧率与显存约束。<a href="#ref18">[18]</a><a href="#ref20">[20]</a><a href="#ref21">[21]</a></p>
+<p><strong>文字也必须产生：</strong>生成器输出视频不等于自动输出脚本和解说。实际产品可让 LLM 先定镜头与分镜编号，生成器逐镜头出视频、选取关键帧，最后核对旁白与成片一致；这是<strong>组合式架构</strong>。VideoPoet 论文明确表示其文本生成能力未被专门评估，不能把它作为单模型“文→视频图文”已验证能力。<a href="#ref18">[18]</a></p></div>
+
+<div class="type-block" id="type6"><h3>Ⅵ｜视频图文 → 视频图文：理解原片后有约束地改片</h3><p class="io"><code>V<sub>src</sub> + I<sub>ref</sub> + T<sub>edit</sub> → V<sub>dst</sub> + I<sub>preview</sub> + T<sub>report</sub></code></p>
+<p><strong>典型任务：</strong>“保持镜头运动和人物身份，把傍晚场景改成下雨，同时给出修改清单。”输入不只是文本：源视频潜变量/离散 token、首帧/参考图、mask、光流、深度、时间窗、指令都可能参与条件。VideoPoet 论文研究了视频补全、外扩、风格化和视频到视频链式编辑；其文字说明的自动生成<strong>仍需额外组件或专门训练</strong>。<a href="#ref18">[18]</a></p>
+<p><strong>两类技术路径：</strong>自回归视频 token 预测将保留的原片片段作前缀或条件，模型补齐目标序列；条件视频扩散在源潜变量/掩码约束下去噪，保持未编辑区域。为确保“仅改变该改变的”，工程上还需要对象跟踪、跨帧 mask 一致性、时间戳对齐、身份/背景保持和局部编辑强度控制。输出的摘要与关键帧必须回看<strong>实际生成的视频</strong>，不能只根据原始编辑意图撰写。</p></div>
+
+<figure class="figure stack-figure" aria-label="理解、统一生成与组合生成的自下而上架构对比"><div class="stack-grid" style="--tracks:3">
+<div><h4>路线 A｜理解型：Qwen2-VL</h4><ol class="stack-track"><li><b>输入图像 / 视频 + 提问</b><small>媒体解码、尺寸与帧预算</small></li><li><b>ViT → 相邻 patch 合并</b><small>视觉语义投影为 LLM 输入向量</small></li><li><b>语言 decoder 因果注意力</b><small>融合前缀，缓存 KV</small></li><li><b>文本词表头 → 答案</b><small>没有像素解码器</small></li></ol></div>
+<div><h4>路线 B｜可生成视觉：Janus / Emu3</h4><ol class="stack-track"><li><b>文本 / 图像 / 视频条件</b><small>理解与生成的视觉路径可不同</small></li><li><b>视觉 tokenizer / 语义编码器</b><small>把输入转为特征或离散码</small></li><li><b>统一自回归主干</b><small>依据模态与任务预测目标 token</small></li><li><b>文字头 / 视觉解码器</b><small>还原像素必须有可重建的视觉路径</small></li></ol></div>
+<div><h4>路线 C｜组合生成：LLM + 生成器</h4><ol class="stack-track"><li><b>提示 / 原图 / 原视频</b><small>版权、范围与保真条件检查</small></li><li><b>LLM 理解、拆分镜头与布局</b><small>形成文本提示及区域 / 时间约束</small></li><li><b>图像或视频条件生成器</b><small>扩散 / flow 预测视觉潜变量</small></li><li><b>解码、核验并组织图文</b><small>防止旁白与画面不符</small></li></ol></div></div>
+<figcaption>图 0b｜<strong>每列由底向上读</strong>：输入 → 编码 → 融合或生成 → 输出。路线 B 的“可生成”只表明具备视觉输出路径，不能推断 Janus/Emu3 的所有视频与混排任务都已同等验证；路线 C 是工程组合，不是单篇论文宣称的统一模型。<a href="#ref12">[12]</a><a href="#ref21">[21]</a><a href="#ref22">[22]</a></figcaption></figure>
+<h3 id="taxonomy-principles">选择架构前要问的四个问题</h3><ol><li><strong>输出要求：</strong>新图片/视频是否必须生成？若是，仅有视觉 encoder + LLM 不够，必须有图像/视频 tokenizer + decoder 或扩散/flow 解码路径。</li><li><strong>保真约束：</strong>要不要保持输入人物、构图、文档字段、动作轨迹？有约束的编辑不同于无条件重画。</li><li><strong>时间与长度：</strong>视频的帧数、帧率、持续时间是否固定？理解侧主要消耗输入 token，生成侧还要付出时空潜变量建模和多步采样。</li><li><strong>输出耦合：</strong>文字、图片/视频是否必须在一次端到端解码中彼此引用？若否，分工明确的组合式流水线往往更易校验、缓存和回滚。</li></ol>
+</section>
+<section aria-labelledby="chap1"><h2 id="chap1"><span class="num">01 /</span>范式跃迁：问题定义与技术演进</h2>
+<p>给定图像 <code>I</code>、文本指令 <code>x</code>，理解型多模态模型学习条件分布 <code>p(y | I, x)</code>：视觉编码器把像素变成特征，连接器决定多少、以什么形式进入 LLM，LLM 以自回归方式输出文本。<strong>共享嵌入空间不等于完整的视觉理解</strong>：图文检索只需辨别整体语义，OCR、定位、图表问答还要求局部细节、几何位置和证据链。综述将架构、训练数据、评测与幻觉列为不同层面的问题。<a href="#ref1">[1]</a><a href="#ref2">[2]</a></p>
+<h3 id="llm-vs-mllm">1.1 纯文本 LLM 与视觉语言模型：不是“一路对多路注意力”</h3><p><strong>注意力头的数量不等于输入模态的数量。</strong>纯文本 LLM 也有<strong>多层、多头</strong>因果自注意力：每个头各算一组 Q/K/V，头在同一层并行，再经输出投影汇合。Qwen2-VL 则在这个语言解码器前<strong>增加一套视觉编码器</strong>：视觉 patch 在 ViT 内通过多头自注意力交互；随后相邻 patch 合并并投影到语言维度；语言解码器对“文本嵌入 + 视觉嵌入”的同一序列做因果自注意力。视觉编码先于语言 prefill，而不是图像、文本各自有一个独立 LLM 同时给下一词投票。<a href="#ref12">[12]</a><a href="#ref23">[23]</a></p>
+<div class="table-wrap"><table><caption>相同注意力公式，不同输入契约与位置语义</caption><thead><tr><th>层面</th><th>纯文本 Qwen2 LLM</th><th>Qwen2-VL</th></tr></thead><tbody><tr><td>输入</td><td>离散文本 token → lookup 嵌入</td><td>文本 lookup；图像/视频需解码、patch 化、ViT 和 merger 后成为连续视觉嵌入</td></tr><tr><td>注意力</td><td>多头因果自注意力 + 前馈层，层层堆叠</td><td>视觉 ViT 内 patch 自注意力；语言侧仍是多头因果自注意力，不是“图像与文字各跑一个答案解码器”</td></tr><tr><td>位置</td><td>文本一维 RoPE（Rotary Position Embedding）</td><td>视觉 ViT 用二维 RoPE；语言侧 M-RoPE 表示时间/高/宽，文本三轴相同</td></tr><tr><td>代价与输出</td><td>由文本长度、并发与输出长度驱动；预测文本词表</td><td>增加视觉预处理、视觉编码、变长视觉 token 与 LLM prefill；仍只预测文本词表</td></tr></tbody></table></div>
+<p>只有某些<strong>其他设计</strong>会额外引入跨注意力：如 BLIP-2 的 Q-Former 用可学习 query 读取视觉特征；早期 Qwen-VL 也有位置感知 adapter。不要把“多模态必然多路 cross-attention”概括到 Qwen2-VL；“多头”（一层算子内部并行）和“多模态”（数据类型及其编码、融合）是正交概念。<a href="#ref6">[6]</a><a href="#ref11">[11]</a><a href="#ref23">[23]</a></p>
+<figure class="figure stack-figure" aria-label="理解型视觉语言模型从底部输入到顶部答案的五层结构"><h4>理解型主链：五层拆开看</h4><ol class="stack-track">
+<li><b>输入契约｜图片 / 视频 + 问题</b><small>决定大小、长宽比、帧率和可见时间戳；文本先分词，媒体先解码。</small></li>
+<li><b>视觉表示｜PatchEmbed → ViT</b><small>像素块变连续特征；视觉注意力处理图内关系。</small></li>
+<li><b>模态连接｜Q-Former / MLP / PatchMerger</b><small>将视觉特征压缩或映射到语言隐藏维度；三者是可选设计，并不串行。</small></li>
+<li><b>语言推理｜插入视觉位置 → 因果 decoder</b><small>视觉与文字共同构成已知前缀；各层用多头注意力与 FFN 更新隐藏状态。</small></li>
+<li><b>输出头｜词表 logits → 文字答案</b><small>结果需要可见证据验证；不具备独立的像素输出能力。</small></li>
+</ol><figcaption>图 1｜从底向上读，解释本章的<strong>图文→文</strong>路线。要生成新图或视频，必须切换到<a href="#taxonomy">任务地图</a>中的可重建视觉路径；单张图像不会只占一个 LLM token。<a href="#ref1">[1]</a><a href="#ref6">[6]</a><a href="#ref12">[12]</a></figcaption></figure>
+</section>
+<section aria-labelledby="chap2"><h2 id="chap2"><span class="num">02 /</span>核心数学：从注意力到条件生成</h2>
+<h3 id="chap2-1">2.1 注意力的“看见范围”由掩码决定</h3><p>在每个头内，查询 <code>Q</code> 与键 <code>K</code> 做点积，按 <code>√dₖ</code> 缩放，再由掩码 <code>M</code> 决定允许读取的位置，最后对值 <code>V</code> 求加权和。ViT 通常允许同一图像 patch 互相读取；语言 decoder 只能读取当前位置及之前的多模态前缀。两者数学算子相同，<strong>训练目标与可见性不同</strong>。某些模型采用窗口、稀疏或线性注意力，不应把一次全局 <code>n×n</code> 矩阵当作所有实现的固定成本。<a href="#ref4">[4]</a><a href="#ref12">[12]</a></p>
+<div class="formula">Attention(Q,K,V) = softmax(QK<sup>⊤</sup>/√d<sub>k</sub> + M)V；N<sub>patch</sub> ≈ (H/p)×(W/p)<small>计算示例：224²、p=14 → 256 patch；448² → 1024 patch。标准密集注意力的两两比较增加 16 倍，但端到端延迟不能据此直接乘 16；FlashAttention 改善实际显存占用，不改变密集注意力比较量的阶。</small></div>
+<h3 id="chap2-2">2.2 三种损失各回答一个问题</h3><div class="table-wrap"><table><thead><tr><th>目标</th><th>监督信号</th><th>适用与边界</th></tr></thead><tbody><tr><td>CLIP 图文对比</td><td>一批图文的配对索引；双向交叉熵</td><td>学习全局相似性，适合检索/零样本分类；不直接训练长答案或局部 OCR。<a href="#ref3">[3]</a></td></tr><tr><td>图像条件 SFT</td><td>只在助手答案位置算 next-token 交叉熵</td><td>学习“看图后如何回答”，必须核对图像占位符、label mask 和反事实视觉依赖。<a href="#ref8">[8]</a></td></tr><tr><td>视觉生成</td><td>离散图像/视频码的 next-token CE，或连续潜变量的条件去噪/flow</td><td>还要有可重建 tokenizer/VAE 与视觉解码器；文字答案损失不会生成像素。<a href="#ref16">[16]</a><a href="#ref21">[21]</a></td></tr></tbody></table></div>
+<div class="formula">L<sub>ITC</sub> = ½[CE(S,diag)+CE(S<sup>⊤</sup>,diag)]；L<sub>SFT</sub> = −Σ<sub>t∈答案</sub>log p(y<sub>t</sub>|I,x,y<sub>&lt;t</sub>)<small>对比相似度 S 来自图文双塔；SFT 的图片 I 实际经 processor/视觉编码/连接器成为连续向量。ITC 的“同批其他样本”可能有假负例，不能把增大 batch 当作必然精度收益。</small></div>
+<h3 id="chap2-3">2.3 一个视觉 token 不是一个像素，也不是一个文字 ID</h3><p>连接器输出的视觉向量与文本 embedding 具有同一隐藏维度，但视觉向量不必有对应的词表 ID；处理器会按图片网格展开图像占位位置。语言层将其与文字一起视作<strong>已知前缀</strong>，因果注意力可从后续问句/输出位置读取此前的视觉 K/V。若占位位置数与视觉特征数不一致，Qwen2-VL 的参考实现直接报错，而非自动对齐。<a href="#ref23">[23]</a></p>
+<h3 id="chap2-4">2.4 图像/视频输出需要不同的解码目标</h3><p>离散路线先训练可重建的视觉 tokenizer，把图像/视频变成码本索引，再对混排 token 做自回归预测并解码；扩散路线先用 VAE 压缩目标，随机加噪并训练条件网络预测噪声/速度等，推理时经多步迭代再解码。Janus 分开理解与生成视觉路径，原因正是“读懂语义”与“还原像素细节”的训练诉求不同。<a href="#ref16">[16]</a><a href="#ref22">[22]</a></p>
+<div class="formula">z<sub>t</sub>=√ᾱ<sub>t</sub>z₀+√(1−ᾱ<sub>t</sub>)ε；L<sub>ε</sub>=E‖ε−ε<sub>θ</sub>(z<sub>t</sub>,t,c)‖²<small>仅展示一种噪声预测目标；CogVideoX 等具体实现需核对参数化。c 可含文本、原图 latent、mask 和参考帧。视频生成的 3D 潜变量、步数与帧数开销不能用理解型 LLM 的 KV 公式代替。</small></div>
+<h3 id="chap2-5">2.5 实用算力直觉</h3><p>理解型的总预算包括媒体解码、视觉编码、合并后的视觉 token 与 LLM prefill/decode；视频理解还乘以帧数/采帧策略。若从 224² 切换到 448²，视觉 patch 变 4 倍，2×2 合并后进入 LLM 的视觉位置也变 4 倍；但延迟受内核、批量、文本长度等共同影响，必须实测。长视频生成另需时空潜变量、VAE 解码和生成步数。<a href="#ref12">[12]</a><a href="#ref20">[20]</a></p></section>
+<section aria-labelledby="chap3"><h2 id="chap3"><span class="num">03 /</span>核心架构：逐层拆解与张量路径</h2>
+<h3 id="chap3-1">3.1 视觉编码器：先保留可用的局部证据</h3><p>ViT 将 <code>H×W×3</code> 像素投影为 <code>[Npatch,Dᵥ]</code> 并加入二维位置，堆叠注意力与前馈块；CLIP 的对比目标使全局图文语义可比较，但仅取一个全局向量会损失小字与区域关系。Qwen2-VL 保留变长 patch，经 2×2 merger 把邻接局部特征送入语言维度；详细数值见<a href="#qwen-operators">3.8</a>。<a href="#ref3">[3]</a><a href="#ref4">[4]</a><a href="#ref12">[12]</a></p>
+<h3 id="chap3-2">3.2 连接器：压缩率决定保留哪些证据</h3><div class="table-wrap"><table><thead><tr><th>架构</th><th>视觉读取/映射算子</th><th>主要交换</th></tr></thead><tbody><tr><td>LLaVA</td><td>逐 patch 线性/MLP 投影</td><td>路径简单，输入视觉位置多；高分辨率带来 prefill 开销。<a href="#ref8">[8]</a></td></tr><tr><td>BLIP-2</td><td>可学习 query 对视觉 patch 做交叉注意力</td><td>长度近固定，语义筛选强，但小字/定位可能在瓶颈处丢失。<a href="#ref6">[6]</a></td></tr><tr><td>Qwen2-VL</td><td>邻接 2×2 特征拼接再 MLP</td><td>长度随有效图像尺寸变化，压缩比约 4:1；必须限制最大视觉 token。<a href="#ref12">[12]</a></td></tr><tr><td>MiniCPM-V 4.7</td><td>在 ViT 中较早进行混合 4×/16× 压缩</td><td>后续视觉计算更省，压缩程度影响细字保真；需按任务评估。<a href="#ref29">[29]</a></td></tr></tbody></table></div>
+<h3 id="chap3-3">3.3 Q-Former：为什么不是“一个池化层”</h3><p>BLIP-2 冻结预训练图像编码器，Q-Former 含可学习 query、自注意力以及插入的图像交叉注意力；文本分支与 query 分支共享部分权重，依据任务切换可见性掩码。第一阶段以图文对比（ITC）、图文匹配（ITM）与图像条件文本生成训练视觉表示；第二阶段将 query 输出投影到冻结 LLM 的输入空间，训练图像条件文本生成。论文实验使用 32 个 query，每个 768 维；这是<strong>特定实现</strong>，不是 Q-Former 定义。<a href="#ref6">[6]</a></p>
+<figure class="figure stack-figure" aria-label="BLIP-2 Q-Former 两阶段从底部图像输入到顶部文本输出"><div class="stack-grid" style="--tracks:2">
+<div><h4>阶段一｜学会“提取什么”</h4><ol class="stack-track"><li><b>图像 + 配对文本</b><small>冻结视觉编码器，输入图文样本。</small></li><li><b>视觉 patch + 可学习 query</b><small>query 在 Q-Former 内经自注意力，并交叉读取图像 K/V。</small></li><li><b>ITC / ITM / 图像条件生成目标</b><small>用不同掩码约束 query 与文本的可见关系。</small></li><li><b>得到图文对齐的 Q-Former</b><small>query 数由配置决定，并非无损压缩。</small></li></ol></div>
+<div><h4>阶段二｜学会“说出来”</h4><ol class="stack-track"><li><b>图像 + 文本描述样本</b><small>视觉编码器、LLM 主干按论文设置冻结。</small></li><li><b>已训练 Q-Former 的 query 输出</b><small>固定数量视觉语义向量。</small></li><li><b>投影到 LLM 隐藏维度</b><small>训练桥接而不重训整个语言模型。</small></li><li><b>LLM 条件生成文字</b><small>优化目标是生成文本，不是重建像素。</small></li></ol></div></div><figcaption>图 3a｜从底向上读，阶段一的<strong>参数</strong>进入阶段二，不是把第一阶段的损失算子插入推理路径。与 Qwen2-VL 的相邻 patch 合并相比，query 读取属于<strong>显式交叉注意力</strong>；论文中的 32 query 是实验配置。<a href="#ref6">[6]</a></figcaption></figure>
+<h3 id="chap3-4">3.4 动态分辨率与时空位置：Qwen2-VL</h3><p>Qwen-VL 的图像路径有固定尺寸约束，Qwen2-VL 引入动态分辨率：处理器按像素范围调整有效宽高、对齐 patch 网格，视觉 ViT 用 2D-RoPE 表示行列；语言侧 M-RoPE 把位置拆成时间、高、宽三个分量。<code>224×224,p=14</code> 的<strong>整齐尺寸算例</strong>对应 256 patch、合并后 64 个视觉向量，再加边界标记共 66 个视觉段位置；不能将此例当作线上默认值。<a href="#ref11">[11]</a><a href="#ref12">[12]</a></p><p>视频先解码/采帧，时间 patch 与空间 patch 共同进入视觉路径；并非每层 ViT 必然对整段影片做全局注意力。M-RoPE 让语言 decoder 在已知前缀中区分“哪一帧、哪一行、哪一列”。工程要保留原始时间戳、裁切映射和视觉 token 上界，防止区域定位看似正确却落在错误帧。<a href="#ref12">[12]</a><a href="#ref23">[23]</a></p>
+<h3 id="chap3-5">3.5 融合边界：理解型只有文字输出头</h3><p>在 Qwen2-VL 里，视觉编码器输出的连续向量替换语言序列中的图像占位嵌入；decoder 统一对可见前缀做因果注意力，经 <code>lm_head</code> 产生文字词表的 logits。<strong>“会看图”与“会生成图”是不同接口</strong>：Janus-Pro 另外训练生成视觉 token 与解码器；CogVideoX 另外训练条件视频扩散。通用 LLM 的文字输出头不能靠改 prompt 输出像素。<a href="#ref23">[23]</a><a href="#ref33">[33]</a><a href="#ref20">[20]</a></p>
+<h3 id="chap3-6">3.6 视频生成案例：两种不应混淆的路径</h3>
+<figure class="figure stack-figure" aria-label="从底部输入到顶部视频输出的两种技术路径"><div class="stack-grid" style="--tracks:2"><div><h4>VideoPoet：离散码自回归</h4><ol class="stack-track"><li><b>文本/参考图/源片</b><small>明确任务、片段与时间条件。</small></li><li><b>可重建的视频 tokenizer</b><small>把条件媒体转成离散 code。</small></li><li><b>模型预测目标视频 code</b><small>逐步生成，长度影响成本。</small></li><li><b>解码视频并校验动作</b><small>报告文字需另行核对真实成片。</small></li></ol></div><div><h4>CogVideoX：连续潜空间去噪</h4><ol class="stack-track"><li><b>文本/原片/掩码</b><small>限定要生成或编辑的内容。</small></li><li><b>3D VAE 压缩目标</b><small>保留时空潜变量。</small></li><li><b>条件扩散 Transformer</b><small>多步去噪，不是 next-token CE。</small></li><li><b>VAE 解码与时间验收</b><small>检查身份、帧间一致、未编辑区域。</small></li></ol></div></div><figcaption>图 3b｜从底向上读，两列为<strong>替代</strong>路径而非串行算子；文→视频与视频编辑还须分开评测，KV 缓存字节估算也不能代替扩散生成成本。<a href="#ref18">[18]</a><a href="#ref20">[20]</a></figcaption></figure>
+<h3 id="operator-stack">3.7 逐算子自下而上：一个生成 token 穿过哪几层？</h3>
+<p><strong>先限定 token 的含义：</strong>图片文件不是一个 LLM token；视觉编码器产生多个 patch 特征，桥接器压缩/映射后形成若干<strong>连续向量</strong>，占据语言序列里的若干位置。下图追踪的是“<strong>下一个输出文字 token</strong>”的查询如何使用这些视觉向量；它不是把某个像素逐层变成一个汉字。多头注意力在纯文本 LLM 里也存在；多模态新增的是<strong>非文本输入的编码、位置、融合和有时额外的输出解码器</strong>。<a href="#ref12">[12]</a><a href="#ref23">[23]</a></p>
+<figure class="figure"><svg viewBox="0 0 850 1030" role="img" aria-labelledby="fstack-title fstack-desc"><title id="fstack-title">自下而上的 decoder-only 与理解型多模态逐算子架构</title><desc id="fstack-desc">左列从底部的文本 tokenizer 和 embedding 向上，经过重复的 RMSNorm、QKV 投影、旋转位置编码、因果注意力、输出投影、残差、归一化、门控前馈和残差，最后词表头选下一个 token。右列底部图像经过解码缩放、patch 投影、视觉 Transformer 注意力与归一化前馈、patch 合并与投影，替换语言序列中视觉占位的 embedding；之后与文本共享同一个语言 decoder 的重复层，通过缓存的键值和因果注意力生成文本 token。生成图像需要另接视觉解码器，不在本图所示理解型路径内。</desc><defs><marker id="arrow-stack" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 8L4 0L8 8" fill="#527989"/></marker></defs>
+<text class="label" x="130" y="36" text-anchor="middle">纯文本 decoder-only</text><text class="label" x="599" y="36" text-anchor="middle">理解型多模态（Qwen2-VL 式）</text><text class="detail" x="20" y="64">输出端 ↑</text><text class="detail" x="350" y="64">生成图像/视频另需可重建视觉 tokenizer / 解码器</text>
+<rect class="node-o" x="20" y="78" width="250" height="58" rx="7"/><text class="label" x="145" y="102" text-anchor="middle">采样 / argmax → 新文字 token</text><text class="detail" x="145" y="122" text-anchor="middle">写入上下文；下一轮增量解码</text>
+<rect class="node-o" x="350" y="78" width="480" height="58" rx="7"/><text class="label" x="590" y="102" text-anchor="middle">采样 / argmax → 新文字 token</text><text class="detail" x="590" y="122" text-anchor="middle">输出头只有文本词表 ≠ 自动生成像素</text>
+<rect class="node-b" x="20" y="157" width="250" height="59" rx="7"/><text class="label" x="145" y="181" text-anchor="middle">RMSNorm → LM Head 线性投影</text><text class="detail" x="145" y="202" text-anchor="middle">隐藏向量 → 词表 logits</text>
+<rect class="node-b" x="350" y="157" width="480" height="59" rx="7"/><text class="label" x="590" y="181" text-anchor="middle">RMSNorm → LM Head 线性投影</text><text class="detail" x="590" y="202" text-anchor="middle">同样只预测文字词表上的概率</text>
+<rect class="node" x="20" y="237" width="250" height="283" rx="8"/><text class="label" x="145" y="260" text-anchor="middle">重复 N 层 · 语言 decoder</text><text class="detail" x="35" y="290">① RMSNorm → Q/K/V Linear</text><text class="detail" x="35" y="320">② 1D RoPE 旋转 Q、K</text><text class="detail" x="35" y="350">③ 因果 SDPA → O Linear</text><text class="detail" x="35" y="380">④ 残差加法 → RMSNorm</text><text class="detail" x="35" y="410">⑤ SwiGLU / FFN → 残差</text><text class="detail" x="35" y="446">每层各有自己的 KV cache</text><text class="detail" x="35" y="478">当前查询读已可见文本 K/V</text>
+<rect class="node" x="350" y="237" width="480" height="283" rx="8"/><text class="label" x="590" y="260" text-anchor="middle">重复 N 层 · 共享语言 decoder</text><text class="detail" x="366" y="290">① RMSNorm → Q/K/V Linear（GQA 可共享 KV 头）</text><text class="detail" x="366" y="320">② M-RoPE 旋转 Q、K（文本 / 时间 / 高 / 宽位置）</text><text class="detail" x="366" y="350">③ 因果 SDPA → O Linear → 残差</text><text class="detail" x="366" y="380">④ RMSNorm → SwiGLU / FFN → 残差</text><text class="detail" x="366" y="446">生成 token 的 Q 读取已可见文本 + 视觉位置的 K/V</text><text class="detail" x="366" y="478">每层存一套语言侧 KV；不是每词重算视觉 ViT</text>
+<rect class="node-b" x="20" y="545" width="250" height="61" rx="7"/><text class="label" x="145" y="571" text-anchor="middle">文本 token ID → Embedding</text><text class="detail" x="145" y="592" text-anchor="middle">已知前缀；无未来答案输入</text>
+<rect class="node-b" x="350" y="545" width="480" height="61" rx="7"/><text class="label" x="590" y="571" text-anchor="middle">文本嵌入 + 视觉向量嵌入替换</text><text class="detail" x="590" y="592" text-anchor="middle">序列长度 = 文本位 + 图像位 + 特殊标记位</text>
+<rect class="node-b" x="20" y="635" width="250" height="66" rx="7"/><text class="label" x="145" y="663" text-anchor="middle">文本 tokenizer / 模板</text><text class="detail" x="145" y="685" text-anchor="middle">离散文字 ID + 一维位置</text>
+<rect class="node-b" x="350" y="635" width="205" height="66" rx="7"/><text class="label" x="452" y="663" text-anchor="middle">文字 tokenizer / 模板</text><text class="detail" x="452" y="685" text-anchor="middle">视觉占位按特征数展开</text>
+<rect class="node-o" x="582" y="635" width="248" height="66" rx="7"/><text class="label" x="706" y="663" text-anchor="middle">2×2 PatchMerger / MLP</text><text class="detail" x="706" y="685" text-anchor="middle">[Npatch,Dᵥ] → [Nvis,Dₗ]</text>
+<rect class="node-b" x="582" y="725" width="248" height="110" rx="7"/><text class="label" x="706" y="750" text-anchor="middle">重复 M 层 · 视觉 ViT</text><text class="detail" x="596" y="777">LayerNorm → QKV Linear</text><text class="detail" x="596" y="803">2D-RoPE → 双向注意力</text><text class="detail" x="596" y="823">残差 → LN / MLP → 残差</text>
+<rect class="node-b" x="582" y="854" width="248" height="62" rx="7"/><text class="label" x="706" y="880" text-anchor="middle">patch embedding</text><text class="detail" x="706" y="901" text-anchor="middle">Conv3d / Linear：局部像素 → 特征</text>
+<rect class="node-b" x="20" y="944" width="250" height="62" rx="7"/><text class="label" x="145" y="970" text-anchor="middle">输入：文本</text><text class="detail" x="145" y="991" text-anchor="middle">请求与对话历史</text>
+<rect class="node-b" x="350" y="944" width="205" height="62" rx="7"/><text class="label" x="452" y="970" text-anchor="middle">输入：文本</text><text class="detail" x="452" y="991" text-anchor="middle">问题 / 历史</text>
+<rect class="node-b" x="582" y="944" width="248" height="62" rx="7"/><text class="label" x="706" y="970" text-anchor="middle">输入：图像 / 视频帧</text><text class="detail" x="706" y="991" text-anchor="middle">解码、缩放、归一化、切 patch</text>
+<path class="arr" marker-end="url(#arrow-stack)" d="M145 944V705M145 635V610M145 545V524M145 237V220M145 157V140M452 944V705M452 635V618H575V610M706 944V920M706 854V839M706 725V705M706 635V618H605V610M590 545V524M590 237V220M590 157V140"/>
+<text class="detail" x="22" y="922">输入端 ↓</text><text class="detail" x="352" y="922">视觉分支先编码，再与文本合流 ↑</text>
+</svg><figcaption>图 3c｜静态、可离线阅读的<strong>自下而上逐算子图</strong>。左、右两列的语言 decoder 都是多层多头而非“单路 attention”；右列的视觉 ViT 不是第二个文字 decoder。图中未绘出的生成型系统（Janus、Emu3 等）若要生成像素，必须再接图像/视频 token 的可重建解码路径。图中的每层 FFN 激活依实际 checkpoint 与实现核对；视频帧注意力的边界不是一个固定全局矩阵。<a href="#ref12">[12]</a><a href="#ref23">[23]</a></figcaption></figure>
+<div class="table-wrap"><table><caption>以“回答图中文字”为例：区分三种常被统称为 token 的东西</caption><thead><tr><th>对象</th><th>实际张量 / 操作</th><th>谁能注意到谁</th></tr></thead><tbody><tr><td>文字 token <code>x_j</code></td><td>tokenizer 给整数 ID；Embedding 查 <code>e_j∈R^D</code></td><td>在 decoder 的因果 mask 下，当前位置可看自己和之前的位置</td></tr><tr><td>图像 patch <code>p_i</code></td><td>像素局部块经 patch embed → <code>h_i∈R^Dᵥ</code>；在视觉 ViT 内经双向注意力形成上下文特征</td><td>依视觉编码器的 mask/窗口/帧边界；不是整段多模态上下文</td></tr><tr><td>视觉输入位置 <code>v_k</code></td><td>相邻 patch merge / 投影 → <code>v_k∈R^Dₗ</code>，替换 LLM 输入中的图像占位嵌入</td><td>按其在 prompt 中的位置进入语言侧因果 mask；问句若排在图像之后，前面的视觉位置不会反看未来问句，但后续输出查询可以读到二者</td></tr><tr><td>待生成文字 <code>y_t</code></td><td>首个答案分布由 prompt 最后一个已知位置的 hidden 预测；之后把刚生成的 <code>y_(t−1)</code> 作为本轮输入，在每层计算查询并读取已缓存的 K/V，经 attention/FFN、LM head 得预测 <code>y_t</code> 的 logits</td><td>只能注意到已存在的前缀，不会看未来答案；decode 复用 KV，不必为每个新词重复做图像编码</td></tr></tbody></table></div>
+<div class="formula">q<sub>j</sub> = W<sub>Q</sub>h<sub>j</sub>；(K<sub>≤j</sub>,V<sub>≤j</sub>) = 已知前缀按模板顺序排列的键值；h′<sub>j</sub> = softmax(q<sub>j</sub>K<sub>≤j</sub><sup>⊤</sup>/√d + M)V<sub>≤j</sub> → logits(y<sub>j+1</sub>)<small>j 是当前<strong>已输入</strong>的最后位置，logits 预测下一位置；前缀可含文字、视觉向量和历史答案。这是单层单头概念式，真实模型有多头/多层、残差与归一化。</small></div>
+<p><strong>推理时序：</strong>① CPU/设备解码图片并整理 prompt；② GPU 上视觉编码和连接器产生视觉嵌入；③ 一次 prefill 对文本+视觉序列执行 LLM 各层，写入 KV cache，并用<strong>最后一个已知位置</strong>的 hidden 得首个输出分布；④ 每生成一个文字 ID，把它作为下一轮已知输入，仅让这个位置穿过各层并查询已有 K/V；⑤ 输出终止或达到上限。不存在先放一个空白答案 token 再读未来答案的步骤；真实回答依赖<strong>多个视觉位置与文字位置的联合上下文</strong>。<a href="#ref23">[23]</a></p>
+<h3 id="qwen-operators">3.8 Qwen2-VL-7B-Instruct：从像素到下一个字的算子级追踪</h3>
+<p><strong>版本边界：</strong>下面以原始 Qwen2-VL 论文、官方 <code>Qwen/Qwen2-VL-7B-Instruct</code> 模型卡和 <code>Transformers v4.46.3</code> 实现为参照，分析<strong>图像/视频输入→文本输出</strong>；不把 Qwen2.5-VL、Qwen3-VL 或所有推理框架的实现细节混成一套。与早期 Qwen-VL 的位置感知 cross-attention adapter 不同，此版视觉连接器的主要算子是<strong>相邻 2×2 patch 合并后的 MLP</strong>。具体形状应以权重配置和 processor 输出复核。<a href="#ref11">[11]</a><a href="#ref12">[12]</a><a href="#ref23">[23]</a><a href="#ref24">[24]</a></p>
+<figure class="figure stack-figure" aria-label="Qwen2-VL 单图请求从像素到文本答案的自下而上张量形状"><h4>Qwen2-VL 单图算例｜底部为输入，顶部为文本词表</h4><ol class="stack-track">
+<li><b>有效输入：224×224 RGB 图片 + 中文问题</b><small>此尺寸仅用于推导，不是 processor 的默认输出。</small></li>
+<li><b>PatchEmbed：Conv3d(2,14,14)</b><small>单图时间维复制后 <code>grid_thw=(1,16,16)</code> → <code>256×Dᵥ</code>。</small></li>
+<li><b>视觉 ViT：LN → QKV → 2D-RoPE → 注意力 → MLP</b><small>保持 256 个 patch；多图/多帧边界依 <code>cu_seqlens</code>。</small></li>
+<li><b>PatchMerger：2×2 拼接 → LN/MLP</b><small><code>[256,Dᵥ] → [64,Dₗ]</code>；邻接局部信息被压缩，非离散词 ID。</small></li>
+<li><b>模板与视觉嵌入合流</b><small>64 个视觉占位与 64 个向量对应；另有视觉起止标记，论文算例该段合计 66 个位置。</small></li>
+<li><b>语言 decoder：M-RoPE → 因果注意力 → FFN</b><small>prefill 已知图文前缀，之后只为新文字位置增量计算并更新 KV。</small></li>
+<li><b>LM head → 下一个文字 token</b><small>不输出像素；OCR 错误应回查原图有效尺寸、连接损失与标注。</small></li>
+</ol><figcaption>图 3d｜<strong>案例化的 3.7</strong>：精确标出视觉特征从 256→64 的变化和输入序列占位。图像不等于一个 token；实际请求应打印 <code>image_grid_thw</code>、图像特征数和占位数；线上像素上限改变会改变每一步的长度。<a href="#ref12">[12]</a><a href="#ref23">[23]</a></figcaption></figure>
+<div class="table-wrap"><table><caption>单张 224×224 RGB 图片的可追踪算例：p=14、temporal patch=2、merge=2；不是默认输入上限</caption><thead><tr><th>阶段与算子</th><th>形状 / 结果</th><th>必须理解的边界</th></tr></thead><tbody>
+<tr><td>① 解码、EXIF/色彩与 resize/normalize</td><td>有效 <code>H'=W'=224</code>，图像网格 <code>grid_thw=(1,16,16)</code></td><td>原图可以不是 224；processor 约束总像素并把宽高对齐到 28 的倍数。单图在该实现中沿时间维复制成 2 帧，供 temporal patch=2 的 Conv3d 消费。<a href="#ref23">[23]</a><a href="#ref24">[24]</a></td></tr>
+<tr><td>② PatchEmbed：<code>Conv3d(kernel=stride=(2,14,14))</code></td><td><code>1×16×16=256</code> 个 patch → <code>[256,Dᵥ]</code></td><td>这是局部线性投影/卷积，不是“把像素变成 256 个文字词”。视频会按 <code>T×H×W</code> 网格输出。<a href="#ref23">[23]</a></td></tr>
+<tr><td>③ 视觉块：LayerNorm → QKV Linear → 2D-RoPE → 缩放点积注意力 → 投影/残差 → LayerNorm/MLP</td><td><code>[256,Dᵥ]</code>，长度暂不变</td><td>视觉 patch 在各图/帧片段内双向交互；<code>cu_seqlens</code> 隔开不同视觉片段。FlashAttention/SDPA 是同一语义的不同内核，不是额外增加一条注意力路。<a href="#ref23">[23]</a></td></tr>
+<tr><td>④ PatchMerger：LayerNorm → 邻域 2×2 拼接 → Linear/GELU/Linear</td><td><code>[256,Dᵥ] → [64,Dₗ]</code></td><td>四个邻接视觉 patch 合成一个 LLM 视觉嵌入；这一步会压缩细字和局部信息，不是生成文本词表 ID。<a href="#ref23">[23]</a></td></tr>
+<tr><td>⑤ 模板展开 + 嵌入替换</td><td><code>64</code> 个图像占位位置对应 <code>64</code> 个视觉嵌入</td><td><code>masked_scatter</code> 将视觉特征写入对应序列位置；占位数与视觉特征数不等会报错。另有视觉起止标记，论文的此例计入后为 <code>66</code> 个视觉段 token，不代表图像特征有 66 个。<a href="#ref12">[12]</a><a href="#ref23">[23]</a></td></tr>
+<tr><td>⑥ 语言 decoder：M-RoPE → RMSNorm → GQA 因果注意力 → FFN → 词表 Linear</td><td><code>[B,L,Dₗ] → [B,L,Vocab]</code>；取下一个文本 token</td><td>先 prefill 全部文本+视觉嵌入，再增量 decode；视觉编码不在每个新文字 token 上重跑，语言侧 K/V 逐步缓存。<a href="#ref23">[23]</a></td></tr>
+</tbody></table></div>
+<p><strong>再看变长：</strong>同样的单图若有效尺寸变成 <code>448×448</code>，视觉 patch 为 <code>32×32=1024</code>，合并后 <code>256</code> 个视觉嵌入（另有视觉边界 token）；这解释了分辨率上升为何主要冲击视觉编码、语言 prefill 与 KV，而不是每一步 decode 都重算 ViT。该数字是由 patch/merge 参数推算的整齐尺寸示例；实际尺寸、图片张数、视频时间采样和模型版本须以 <code>image_grid_thw</code> 与模板展开结果验证。<a href="#ref12">[12]</a><a href="#ref23">[23]</a></p>
+<div class="callout"><span class="eyebrow">视频版本多一步时间索引</span><p>视频样本变为 <code>grid_thw=(T,H/14,W/14)</code>；PatchEmbed 的时间核覆盖 2 帧，视觉注意力按实现的 <code>cu_seqlens</code> 在时间 patch 对应的视觉片段内计算；语言侧 M-RoPE 为视觉嵌入提供时间、高、宽三组位置索引。<strong>不要假定视觉 ViT 对整段视频跨所有帧做一张全局注意力矩阵</strong>，也不要把“跨帧信息”误解为新建一个文本解码器。输入采样的时间戳和帧率仍是 processor/服务层契约。<a href="#ref12">[12]</a><a href="#ref23">[23]</a></p></div>
+<div class="callout"><span class="eyebrow">架构评审的四个问题</span><p>① 输入如何编码、输出由什么解码？② 文本/视觉/视频分别用什么训练目标？③ 原图/原视频哪些区域与时刻必须保真？④ 最差输入输出长度下，视觉 token 或时空潜变量预算是多少？把这四项连起来，才谈得上模型、数据与服务的共同选型。</p></div></section>
+
+<section aria-labelledby="chap4"><h2 id="chap4"><span class="num">04 /</span>完整训练调优：数据 → 对齐 → 指令 → 验收</h2>
+<p>“四阶段”是便于工程组织的<strong>参考路线</strong>，不是每篇论文都按同样顺序训练。LLaVA 采用特征对齐、视觉指令调优两阶段；BLIP-2 两阶段都服务于冻结主干桥接；Qwen2-VL 使用三阶段；OneVision-1.5 划分 alignment、mid-training、instruction tuning，随后有可选 RL。阶段名称相似但模块冻结范围与目标函数不同。<a href="#ref6">[6]</a><a href="#ref8">[8]</a><a href="#ref12">[12]</a><a href="#ref10">[10]</a></p>
+<figure class="figure stack-figure" aria-label="从底部数据治理到顶部上线验收的理解型多模态训练流程"><h4>理解型训练路线：每一层通过门禁才上行</h4><ol class="stack-track">
+<li><b>数据契约与清洗</b><small>图片/帧/文本来源、版权、近重复与评测集隔离；随机抽检图文对应关系。</small></li>
+<li><b>视觉语义初始化</b><small>选择 ViT/CLIP/SigLIP 预训练骨干；冻结或解冻由领域差异决定。</small></li>
+<li><b>连接器对齐</b><small>投影/查询压缩，检查换图、遮挡后回答是否变化。</small></li>
+<li><b>中训与多任务监督</b><small>OCR、区域、图表、视频等按视觉 token 和任务采样比例混合；监控文本退化。</small></li>
+<li><b>视觉指令调优（SFT）</b><small>固定 processor、chat template、答案 label mask 和时间/坐标系。</small></li>
+<li><b>可选偏好/RL → 回归门禁</b><small>只在可信奖励与成对图文数据下启用；质量、幻觉、成本都需达标。</small></li>
+<li><b>发布 / 灰度 / 错误样本回流</b><small>失败样本先授权、脱敏、标注与复核，不自动进入训练。</small></li>
+</ol><figcaption>图 4｜从底向上是<strong>工程化理解型基线</strong>，不是每篇论文的固定阶段。BLIP-2 训练 Q-Former 与冻结 LLM 的两阶段、Qwen2-VL 的三阶段、OneVision-1.5 的对齐/中训/指令阶段，目标和冻结范围不同。生成型还须另训练可重建的图像/视频输出路径（见 4.5）。<a href="#ref6">[6]</a><a href="#ref10">[10]</a><a href="#ref12">[12]</a></figcaption></figure>
+<h3 id="chap4-0">4.0 数据先行：图像、问题、答案及位置必须对齐</h3><p>一条样本至少保留媒体哈希、来源/授权、宽高/时长、任务类型、问题、答案、对话模板、分割集与标注质量；定位任务还要记录坐标系，视频还要保留原始时间戳和采样策略。图片近重复和同实体跨训练/测试泄漏会让指标虚高；网页图文配对的 alt text 未必描述画面。BLIP 的 CapFilt 是清洗噪声配对的一种方法，不等于所有合成描述都可靠。<a href="#ref5">[5]</a></p>
+<div class="table-wrap"><table><thead><tr><th>分层</th><th>训练目标与参数范围</th><th>通过条件 / 排查</th></tr></thead><tbody><tr><td>4.1 桥接对齐</td><td>已有图像编码器与 LLM；冻结双主干训练投影器，或按 BLIP-2 方法训练 Q-Former 的 ITC/ITM/文本生成目标。</td><td>替换图片后答案应跟着变；若不变，先查媒体加载、占位展开、mask、可训练参数。<a href="#ref6">[6]</a><a href="#ref8">[8]</a></td></tr><tr><td>4.2 多任务中训</td><td>按图文描述、OCR、图表、定位、多图/视频设置采样与 loss；需要新视觉细节能力时才解冻 ViT 高层或全模型。</td><td>同时记录<strong>样本数与实际视觉 token 数</strong>，防止长视频占据绝大部分计算；检查文本回归与小目标能力。<a href="#ref10">[10]</a><a href="#ref12">[12]</a></td></tr><tr><td>4.3 指令调优</td><td>用与推理相同的 processor/template；仅对需要预测的助手答案标注交叉熵，其余位置设 <code>ignore_index</code>。</td><td>一条样本打印 input、展开后的视觉位置、答案标签和长度；不能把提示词或 padding 错算入目标。</td></tr><tr><td>4.4 偏好/RL（可选）</td><td>DPO 的偏好答案必须共享同图同问；可验证任务才考虑用 GRPO 类奖励优化。</td><td>若出现奖励投机、图像依赖减弱或短回答退化，回退 SFT checkpoint；不要把 RL 视作所有模型的必经阶段。<a href="#ref10">[10]</a></td></tr></tbody></table></div>
+<h4>按模型拆解：训练阶段相似，更新范围不同</h4><p>BLIP-2 的<strong>第一阶段</strong>在冻结视觉骨干上训练 Q-Former 的图文对比/匹配/条件文本目标，<strong>第二阶段</strong>让 query 输出适配冻结 LLM；LLaVA 的两阶段是简单连接器对齐和视觉指令调优；Qwen2-VL 论文的三阶段依次侧重 ViT 视觉预训练、解冻全参数的多任务学习、冻结 ViT 的指令微调。OneVision-1.5 的 Stage-1.5 使用全参数中训，不可被误写为“始终冻结主干”。若目标是票据 OCR，先判断数据与分辨率能否覆盖小字，再决定是否解冻视觉层。<a href="#ref6">[6]</a><a href="#ref8">[8]</a><a href="#ref10">[10]</a><a href="#ref12">[12]</a></p>
+<div class="formula">有效 batch = 单设备样本数 × 数据并行副本数 × 梯度累积；损失只在被监督的答案 token 位置计算<small>多图与长视频的计算成本不能只看样本数：同时记录各任务的视觉 token、答案 token、每步显存峰值与梯度范数。packing 时需验证跨样本 attention 隔离和每样本位置/媒体索引。</small></div>
+<div class="callout"><span class="eyebrow">一个训练调试闭环</span><p>用同一张图做原图、遮挡关键区域、随机换图三种输入：若答案都相同，优先检查视觉路径/模板；若细字错而裁切放大后正确，优先改预处理和像素预算；若图文正确却文字能力退化，检查解冻范围、数据配比和学习率，而不是直接增加 RL。每阶段保存权重、processor、tokenizer、数据版本、采样策略和随机状态，断点续训时核对学习率及样本顺序。</p></div>
+<h3 id="chap4-5">4.5 生成图像或视频：另建可重建输出路径</h3><p>图文→图文不能只微调 Qwen2-VL 的文字头。统一离散路线需可重建视觉 tokenizer、视觉码监督与图像解码器；扩散/flow 路线需目标图/视频的潜变量、条件和去噪目标。训练还要针对未编辑区域、身份、文字、视频时间一致性设置回归集；是否把文字解释放在同一次解码，取决于实际模型与产品编排。<a href="#ref16">[16]</a><a href="#ref20">[20]</a><a href="#ref22">[22]</a></p></section>
+<section aria-labelledby="chap5"><h2 id="chap5"><span class="num">05 /</span>模型谱系：从机制到场景选型</h2><p>时间线已给首次公开顺序，此处不重复排榜，而把<strong>同一张文档图/视频片段</strong>送进几种架构：重点看视觉特征在哪里压缩、何时和文字融合、是否存在视觉输出头。论文指标若数据、预处理、显存与测试集不同，不可直接排序。</p>
+<h3 id="open-models">5.1 代表性开放模型的架构差异（截至 2026-10-23 核对）</h3><div class="table-wrap"><table><thead><tr><th>项目/来源</th><th>底→顶连接方式</th><th>创新点与工程代价</th></tr></thead><tbody>
+<tr><td>Qwen3.5（视觉）<a href="#ref26">[26]</a></td><td>视觉 ViT → merger → 语言主干交替 Gated DeltaNet 线性状态层与全注意力层 → 文字</td><td>避免所有层都做全长注意力；内存不再仅由旧式 KV 公式决定，还要核对线性状态和该 checkpoint 的视觉配置。</td></tr>
+<tr><td>Qwen3-VL <a href="#ref27">[27]</a></td><td>ViT 多级特征 → DeepStack 多层注入 → Interleaved M-RoPE 语言主干 → 文字</td><td>与“只在输入处替换一次 embedding”的 Qwen2-VL 不同；更丰富层级特征带来融合与实现复杂度。</td></tr>
+<tr><td>InternVL3.5 <a href="#ref28">[28]</a></td><td>高分辨率动态裁块 → InternViT → pixel unshuffle → MLP → 语言主干</td><td>每块降低视觉长度而保留细节；块数增长仍使总视觉 token 增长，不能只报单块 token 数。</td></tr>
+<tr><td>MiniCPM-V 4.7 <a href="#ref29">[29]</a></td><td>视觉塔<strong>内部</strong>早期压缩 4×/16× → 语言主干（35B-A3B 为 MoE，1B 不是）</td><td>后续 ViT 层的计算量也可下降；高压缩需验证小字，MoE 激活少不等于全部专家权重免存储。</td></tr>
+<tr><td>LLaVA-OneVision-2 <a href="#ref30">[30]</a></td><td>视频 I 帧与 P 帧的内容/运动 patch 选择 → 共享视觉编码器 → LLM</td><td>相同 token 预算覆盖更长时间；须验证静止但重要的文字、镜头切换与码流依赖。</td></tr>
+<tr><td>Molmo2 <a href="#ref31">[31]</a></td><td>多 crop / SigLIP 系视觉特征 → token_pooling 对应输入位置 → 语言主干</td><td>图像/视频 pointing 与 tracking 有对应数据、标签和评测；不是仅凭全局 VQA 推断定位能力。</td></tr>
+<tr><td>Kimi-VL <a href="#ref32">[32]</a></td><td>MoonViT 原生分辨率视觉编码 → MLP → MoE 语言主干</td><td>视觉尺度选择与语言专家路由分属不同成本；激活参数少不自动减少图像 patch。</td></tr>
+<tr><td>Janus-Pro <a href="#ref33">[33]</a></td><td>理解视觉路径 / 生成视觉路径分离 → 共享自回归主干 → 文字或视觉码解码</td><td>具备文字→图像生成路径；与上面“图像理解→文字”的模型不能仅用文字头作同类输出比较。</td></tr>
+</tbody></table></div>
+
+<h3 id="model-cases">5.2 三个模型案例：同一个“输入→输出”框架如何变形</h3>
+<figure class="figure stack-figure" aria-label="Qwen3-VL、MiniCPM-V 4.7、Janus-Pro 三种模型由输入到输出的层级区别"><div class="stack-grid" style="--tracks:3">
+<div><h4>Qwen3-VL｜读合同小字</h4><ol class="stack-track"><li><b>多页截图 + 字段问题</b><small>控制有效分辨率与视觉预算。</small></li><li><b>ViT 提取低/中/高层特征</b><small>原始区域与语义层次都保留。</small></li><li><b>DeepStack 多层视觉注入</b><small>不能仅复制 Qwen2-VL 的输入端 scatter。</small></li><li><b>语言 decoder → 字段文本</b><small>核对原图坐标、金额与拒答。</small></li></ol></div>
+<div><h4>MiniCPM-V 4.7｜端侧票据</h4><ol class="stack-track"><li><b>票据图片 + 字段问题</b><small>移动设备先做尺寸与格式检查。</small></li><li><b>ViT 内早期视觉压缩</b><small>按 4×/16× 取舍小字与计算。</small></li><li><b>语言 decoder / 可选 MoE</b><small>35B-A3B 与 1B 不是同一成本。</small></li><li><b>字段文字与失败回退</b><small>量化版也要做 OCR 回归。</small></li></ol></div>
+<div><h4>Janus-Pro｜生成宣传插图</h4><ol class="stack-track"><li><b>文字描述 / 可选参考图</b><small>定义主题与要保留的语义。</small></li><li><b>理解与生成视觉路径分工</b><small>语义向量不能直接当作可解码像素。</small></li><li><b>自回归主干预测视觉码</b><small>目标不再只有文字 CE。</small></li><li><b>图像解码器 → 新图</b><small>检查提示一致、文字与身份。</small></li></ol></div></div><figcaption>图 5｜从底向上追踪三个<strong>不同任务</strong>：Qwen3-VL 的多层注入、MiniCPM 的编码器内压缩、Janus-Pro 的视觉生成路径，分别改变了“在哪里保留信息”“在哪里节省算力”“是否能生成像素”。这是模型机制解读与工程评测建议，并非三者在同一数据集上的胜负榜。<a href="#ref27">[27]</a><a href="#ref29">[29]</a><a href="#ref33">[33]</a></figcaption></figure>
+<p><strong>落地例：</strong>企业票据抽取先用<a href="#qwen-operators">Qwen2-VL 算子路径</a>建立可追踪基线：固定图片与模板，逐项记录有效像素、合并后视觉位置、字段 F1 和首 token 时延。若小字错但裁切放大后正确，优先改预处理；若需要长视频事件顺序，对比 OneVision-2 的内容驱动采样与 Molmo2 的长视频/指向回归；若需求是<strong>生成</strong>新图，不要继续仅调理解型的文字头，而应切到 Janus-Pro 或条件图像生成管线。上述选择是工程推断，具体精度与成本需同数据、同硬件复测。</p>
+<div class="callout"><span class="eyebrow">阅读顺序与源码边界</span><p>先问“输出文字还是像素”，再看“输入在视觉塔何时被压缩”，最后看“融合一次还是多层注入”和“语言侧是全注意力、线性状态还是 MoE”。表格依据相应官方仓库/模型配置，不代表每个项目的代码、权重、数据以相同许可开放；以目标 checkpoint 的 license、processor 和 Git commit 冻结后再部署。</p></div></section>
+<section aria-labelledby="chap6"><h2 id="chap6"><span class="num">06 /</span>推理部署：token、显存、延迟与故障</h2>
+<h3 id="chap6-1">6.1 先算最坏视觉 token，再估 KV cache</h3><p>部署时统一预算：<code>Ntotal = Nsystem + Nuser + Nvisual + Nhistory + Noutput</code>。文本化图像占位符个数不等于视觉展开长度；processor 的 patch/crop/frame/merge 策略才是决定量。Qwen2-VL 类变长输入要以<strong>实际上线预处理</strong>跑 p50/p95/p99 token 分布，并按最坏业务输入做容量门禁。<a href="#ref12">[12]</a></p>
+<div class="formula">KV 字节 ≈ B × L × (T<sub>prompt</sub> + T<sub>generated</sub>) × 2 × H<sub>kv</sub> × D<sub>head</sub> × bytes<sub>kv</sub><small>B 为并行序列数，L 为 LLM 层数，Hₖᵥ 为 KV 头数；2 代表 K/V。与 GQA/MQA、KV 精度、页式内存管理和分布式切分有关；不含视觉编码器、权重、激活、碎片与框架预留。</small></div>
+<p><strong>纯计算示例：</strong>假设 <code>B=1, L=32, Hkv=8, Dhead=128, bytes=2</code>，每个 LLM token 约消耗 <code>32×2×8×128×2 = 131072 B ≈ 128 KiB</code> KV；若新增 1024 个视觉 token，新增约 128 MiB KV。实际模型数字必须以配置文件核对：部分模型的视觉 token 在 prefill 前合并，且权重/视频缓存与其他并发请求也占显存。</p>
+<figure class="figure stack-figure" aria-label="多模态请求服务从底部输入到顶部输出的可观测路径"><h4>一条请求的上线路径：每层分别计时</h4><ol class="stack-track">
+<li><b>入口：上传图像 / 视频 / 文本</b><small>鉴权、媒体类型与大小上限、远程域名限制、防注入。</small></li>
+<li><b>CPU / 媒体层：解码与采帧</b><small>记录原尺寸、有效尺寸、帧时间戳、CPU 用时。</small></li>
+<li><b>processor：网格与模板</b><small>计算 <code>image_grid_thw</code>、视觉 token 上界与文本占位；检查数量一致。</small></li>
+<li><b>GPU 视觉侧：ViT + 连接器</b><small>单独测视觉编码时间、峰值显存和缓存命中。</small></li>
+<li><b>LLM prefill：全文/视觉前缀</b><small>构建逐层 KV 或线性状态；统计到首 token 的延迟。</small></li>
+<li><b>增量 decode：每步输出 token</b><small>读取已缓存前缀；记录每秒输出 token、p95/p99 与并发。</small></li>
+<li><b>结果：文字 / 结构化字段</b><small>回溯图上证据、敏感输出检查、灰度与版本回滚。</small></li>
+</ol><figcaption>图 6｜由底向上是<strong>理解型服务</strong>的测量边界。TTFT 高先分解媒体解码、视觉编码和 prefill；decode 慢再查 KV/线性状态、并发与内核。图像/视频<strong>生成</strong>需另加视觉解码/扩散采样阶段，不能用本图的语言侧 KV 字节式估整个生成成本。<a href="#ref24">[24]</a><a href="#ref25">[25]</a></figcaption></figure>
+<h3 id="chap6-2">6.2 量化、批处理与缓存的适用边界</h3><p>量化减少模型权重与可能的 KV 显存，但不必然减少图像预处理时间或视觉 token 数；视觉编码器、连接器和 LLM 可分别量化，先做<strong>原精度 → 量化</strong>同输入配对回归，尤其关注小字、图表数字、颜色、区域指代和多帧顺序。任何“INT4 仅下降 x%”都必须在指定模型、校准集、硬件与评测集下实测，本文不虚构通用精度损失。</p>
+<p>连续批处理可提高吞吐，但一张超大图会显著拉长某个批次的 prefill，导致小请求排队。可按 <code>Nvisual</code>、文本上下文和输出长度设分级队列；限制单请求最大像素/帧数，提供自动降采样或明确拒绝策略。仅对<strong>相同图片内容、相同 processor/视觉权重版本和相同 crop 策略</strong>的结果做缓存，不能凭 URL 复用；变更模型后缓存要失效。</p>
+<h3 id="chap6-3">6.3 可复现压测与灰度上线</h3><div class="table-wrap"><table><caption>一套最小但可信的线上压测维度</caption><thead><tr><th>固定条件</th><th>记录指标</th><th>典型异常与处置</th></tr></thead><tbody><tr><td>模型/processor 版本、硬件、精度、并发、输入桶、输出上限、采样参数</td><td>视觉 token 数、GPU 峰值、吞吐（请求/s 与输出 token/s）、TTFT p50/p95/p99、E2E p95/p99</td><td>TTFT 高但 decode 稳：查解码/裁切/视觉编码/prefill；尾延迟突增：按图像 token 分桶</td></tr><tr><td>长文本 + 多图/长视频的压力集</td><td>OOM 率、截断率、拒绝率、可读性、时间定位错误率</td><td>上下文截断：先限制输入帧/像素与历史，再决定扩窗</td></tr><tr><td>同输入双版本灰度</td><td>任务质量与成本、用户申诉、错误样本回流</td><td>单点模型分数上涨不等于上线成功；保留可立即回滚的版本</td></tr></tbody></table></div>
+<h3 id="chap6-4">6.4 生成型服务单独计费：别拿 KV 公式估视频</h3><p>6.1 的 KV 字节公式只适用于<strong>自回归 LLM 的 token 缓存部分</strong>。扩散图像/视频服务的显存和延迟还取决于 VAE 压缩比、潜变量网格、采样步数、条件分支、参考帧与输出视频尺寸；自回归视频生成则受视觉 token 数和逐 token 解码限制。生产配置应分别统计“文本首 token 时间、图片生成张数与耗时、视频有效帧数与耗时、失败重试率、逐帧一致性”，还要将脚本生成、媒体生成、回看审核分段记录。<a href="#ref18">[18]</a><a href="#ref20">[20]</a></p>
+<h3 id="qwen-deployment">6.5 Qwen2-VL-7B-Instruct：从单图验证到线上服务</h3>
+<p><strong>前提和范围：</strong>本节以 <code>Transformers 4.46.3</code> 的算子实现和官方模型卡示例为参考；必须预先取得相同版本的模型权重、processor 与 tokenizer，并准备已验证兼容的 PyTorch/CUDA GPU 环境。<code>7B</code> 不是承诺某张卡一定装得下：模型权重之外还需视觉编码器、变长输入、KV 缓存与并发余量。先在一张图上建立质量与时延基线，再评估服务框架；下方命令未在用户硬件上执行，不作为 MUSA 或其他非 CUDA 平台的兼容性保证。<a href="#ref23">[23]</a><a href="#ref24">[24]</a></p>
+<h4>① 本地单请求：固定输入、检查 token 数、获得基线答案</h4>
+<p>在已安装匹配 GPU 驱动与 PyTorch 的隔离环境内，再安装本示例所需库；生产环境应锁定所有依赖和模型权重修订号。<code>MODEL_DIR</code> 可指向预先下载的本地快照目录；<code>IMAGE_PATH</code> 是本机允许读取的图片。若需视频，将单图消息改为官方视频消息和 <code>process_vision_info</code>，并另行验证帧采样与 <code>video_grid_thw</code>，不要直接把下方单图统计套到视频。<a href="#ref24">[24]</a></p>
+<pre><code>python -m pip install 'transformers==4.46.3' accelerate pillow
+export MODEL_DIR=/srv/models/Qwen2-VL-7B-Instruct
+export IMAGE_PATH=/data/test/receipt.jpg
+python - &lt;&lt;'PY'
+import os
+import torch
+from PIL import Image, ImageOps
+from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
+
+if not torch.cuda.is_available():
+    raise RuntimeError("此示例需已验证兼容的 CUDA GPU 与 PyTorch")
+model_dir = os.environ["MODEL_DIR"]
+image = ImageOps.exif_transpose(Image.open(os.environ["IMAGE_PATH"])).convert("RGB")
+processor = AutoProcessor.from_pretrained(
+    model_dir, min_pixels=256 * 28 * 28, max_pixels=1280 * 28 * 28
+)
+model = Qwen2VLForConditionalGeneration.from_pretrained(
+    model_dir, torch_dtype="auto", device_map="auto"
+).eval()
+messages = [{"role": "user", "content": [
+    {"type": "image"},
+    {"type": "text", "text": "提取图中设备编号；看不清则明确说明。"}
+]}]
+prompt = processor.apply_chat_template(
+    messages, tokenize=False, add_generation_prompt=True
+)
+batch = processor(text=[prompt], images=[image], padding=True, return_tensors="pt")
+grid_t, grid_h, grid_w = batch["image_grid_thw"][0].tolist()
+merge = model.config.vision_config.spatial_merge_size
+expected = grid_t * grid_h * grid_w // (merge * merge)
+actual = (batch["input_ids"] == model.config.image_token_id).sum().item()
+assert actual == expected, (actual, expected)
+print("视觉网格、进入 LLM 的视觉占位数：", (grid_t, grid_h, grid_w), actual)
+batch = batch.to("cuda")
+with torch.inference_mode():
+    generated = model.generate(**batch, max_new_tokens=128, do_sample=False)
+answer_ids = generated[:, batch["input_ids"].shape[1]:]
+print(processor.batch_decode(answer_ids, skip_special_tokens=True)[0])
+PY</code></pre>
+<p>此处 <code>min_pixels/max_pixels</code> 是<strong>预处理后的像素预算</strong>；通过有效 <code>28×28</code> 像素大致对应一个合并后的视觉 token，不是像素总量直接等于 token 数。与 3.7 的 <code>224×224 → 64</code> 纯算例不同，<strong>本段设置了最少约 256 个视觉 token</strong>，一张较小图会按处理器规则放大，必须看实际 <code>image_grid_thw</code>，不能把 64 当本例输出。降低 <code>max_pixels</code> 通常降低视觉开销，却可能损伤小字 OCR；提高它需同步检查显存、首 token 时延和错误率。<code>max_new_tokens</code> 只限生成文本长度，并不会减少输入图片的编码成本。模型卡给出同类处理器调用方式，本例增加了单图 token 数断言，作为服务接入前的契约检查。<a href="#ref24">[24]</a></p>
+<h4>② 服务化：区分预处理契约与模型执行器</h4>
+<p>采用具有 Qwen2-VL 支持的 vLLM 版本时，可先限制单图片、单机本地监听作为验收环境；<strong>不要把服务端“支持图片”推断为当前版本的视频、所有图文混排模板也已验收</strong>。下面 CLI 是官方模型卡与 vLLM 参数文档支持的服务入口，启动前仍需在所选版本运行 <code>vllm serve --help</code> 并固定容器、模型版本与显存配置。示例 <code>8192</code> 是试运行上下文限制，不是论文规定的默认值。<a href="#ref24">[24]</a><a href="#ref25">[25]</a></p>
+<pre><code>vllm serve "$MODEL_DIR" \
+  --served-model-name qwen2-vl-7b \
+  --host 127.0.0.1 --port 8000 \
+  --max-model-len 8192 \
+  --limit-mm-per-prompt '{"image":1}'</code></pre>
+<p>应用请求使用 OpenAI 兼容的 <code>/v1/chat/completions</code>，本地以 data URI 提交图片；样例仅发给本机监听端口，生产服务不应开启任意本地文件路径读取，也应限制远程媒体域名、上传体积、解码时长并配合鉴权。下面客户端依赖 Python 标准库，<code>IMAGE_PATH</code> 与本地基线取同一文件。<a href="#ref24">[24]</a><a href="#ref25">[25]</a></p>
+<pre><code>python - &lt;&lt;'PY'
+import base64
+import json
+import mimetypes
+import os
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+image_path = Path(os.environ["IMAGE_PATH"])
+mime = mimetypes.guess_type(image_path.name)[0]
+if mime not in {"image/jpeg", "image/png"}:
+    raise ValueError("本例仅演示 JPEG/PNG")
+payload = {
+    "model": "qwen2-vl-7b",
+    "messages": [{"role": "user", "content": [
+        {"type": "text", "text": "提取图中设备编号；看不清则明确说明。"},
+        {"type": "image_url", "image_url": {
+            "url": "data:" + mime + ";base64,"
+                   + base64.b64encode(image_path.read_bytes()).decode()
+        }}
+    ]}],
+    "temperature": 0,
+    "max_tokens": 128
+}
+request = Request(
+    "http://127.0.0.1:8000/v1/chat/completions",
+    data=json.dumps(payload).encode(),
+    headers={"Content-Type": "application/json"}
+)
+with urlopen(request, timeout=120) as response:
+    print(json.load(response)["choices"][0]["message"]["content"])
+PY</code></pre>
+<div class="table-wrap"><table><caption>从样例变成生产流程：按阶段留证据与回滚点</caption><thead><tr><th>阶段</th><th>应记录与验证</th><th>典型故障 / 处置</th></tr></thead><tbody>
+<tr><td>输入网关/processor</td><td>图片格式、原/有效尺寸、<code>image_grid_thw</code>、实际视觉 token、图像数量</td><td>图片过大或乱码：拒绝/降采样；更改 <code>max_pixels</code> 后 OCR 下降须回退处理器配置</td></tr>
+<tr><td>视觉 ViT + merger</td><td>视觉编码耗时、峰值显存、占位符与特征数相等</td><td><code>Image features and image tokens do not match</code>：检查模板、图像顺序与 processor/权重版本；不能简单补零填充</td></tr>
+<tr><td>语言 prefill / decode</td><td>输入长度、TTFT、输出 token/s、KV 缓存、分桶 p95/p99</td><td>高分辨率、多图造成 OOM/首 token 抖动：降低输入上限、分队列并控制并发，保留原精度质量回归</td></tr>
+<tr><td>业务回归 / 灰度</td><td>纯文本基线、图片替换/遮挡测试、OCR/定位、异常输入与拒答</td><td>文字答案与图片无关：检查视觉处理链与图文模板；新执行器与本地基线逐样本对照</td></tr>
+</tbody></table></div>
+<p><strong>部署边界：</strong>第一段 <code>AutoProcessor</code> 显式设置的像素预算<strong>不会自动传给</strong>独立 vLLM 服务。对齐两端必须在已验证支持的执行器版本中配置多模态 processor 参数，或使用与本地相同的预处理配置/模型快照，然后以相同图片核验视觉 token、答案和时延。视频还需绑定抽帧策略与时间戳；纯文本/图片成功不意味着服务端视频接入已验证。以上为可执行的 CUDA 示例和生产检查方法，非用户机器实测。<a href="#ref24">[24]</a><a href="#ref25">[25]</a></p>
+<div class="callout warn"><span class="eyebrow">上线前四个硬门槛</span><p>① 媒体文件大小、格式、解码耗时和最大帧数受限；② 非可信图文内容中的指令不覆盖系统策略；③ 随机/损坏图片有确定性错误返回；④ 模型与 processor、tokenizer、模板及视觉 tokenizer/VAE 同版本部署并可回滚。此处是工程检查单，不是论文已证明的通用指标。</p></div></section>
+
+<section aria-labelledby="chap7"><h2 id="chap7"><span class="num">07 /</span>评测、安全与开放问题</h2>
+<p>不能只用一个综合榜单衡量模型。综述把多模态幻觉、推理、多语言与不同颗粒度任务分开讨论；工程评测还需加入服务成本和输入攻击面。一个模型可以在通用 VQA 得分上升，同时更容易读错收据总额或编造未出现的物体。<a href="#ref1">[1]</a><a href="#ref2">[2]</a></p>
+<div class="table-wrap"><table><caption>评测矩阵：每条主张都有对应反例</caption><thead><tr><th>能力</th><th>正例 / 压力样本</th><th>反事实检查与指标</th></tr></thead><tbody>
+<tr><td>整体识别</td><td>常见物体、组合属性、低照度与遮挡</td><td>图像替换后答案是否改变；分类/问答准确率</td></tr>
+<tr><td>OCR 与文档</td><td>小字、旋转票据、多栏表格、负数和单位</td><td>裁去证据区；字符误差、字段 F1、数值严格匹配</td></tr>
+<tr><td>定位 / 关系</td><td>区域框、左右关系、重叠计数</td><td>交换图中对象位置；IoU、坐标误差、关系准确率</td></tr>
+<tr><td>多图 / 视频</td><td>帧顺序、时间戳、近重复片段</td><td>打乱帧顺序；事件顺序准确率与时间定位误差</td></tr>
+<tr><td>幻觉 / 证据</td><td>无目标图、证据不足、图文冲突</td><td>不能回答时拒答率、错误自信率、基于证据的人工判定</td></tr>
+<tr><td>鲁棒 / 安全</td><td>图中文字注入、错误文件、敏感图像</td><td>系统策略是否被覆盖、异常路径是否安全返回</td></tr>
+</tbody></table></div>
+<figure class="figure"><svg viewBox="0 0 850 240" role="img" aria-labelledby="f6title f6desc"><title id="f6title">视觉幻觉与数据回流闭环</title><desc id="f6desc">线上请求进入回答与置信检查；无证据、误读与注入样本进入安全处理、人工复核与分层回归，合格样本才能回到训练数据。</desc><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#527989"/></marker></defs><rect class="node-b" x="12" y="35" width="160" height="65" rx="7"/><text class="label" x="92" y="63" text-anchor="middle">输入 + 问题</text><text class="detail" x="92" y="84" text-anchor="middle">图像含非可信文本</text><rect class="node" x="213" y="35" width="160" height="65" rx="7"/><text class="label" x="293" y="63" text-anchor="middle">答案与证据</text><text class="detail" x="293" y="84" text-anchor="middle">能否引用可见内容</text><rect class="node-o" x="414" y="35" width="160" height="65" rx="7"/><text class="label" x="494" y="63" text-anchor="middle">风险分流</text><text class="detail" x="494" y="84" text-anchor="middle">误读 / 幻觉 / 注入</text><rect class="node" x="615" y="35" width="222" height="65" rx="7"/><text class="label" x="726" y="63" text-anchor="middle">人工复核 / 回归集</text><text class="detail" x="726" y="84" text-anchor="middle">来源、权限、标签复查</text><path class="arr" d="M172 68H209M373 68H410M574 68H611"/><rect class="node-b" x="213" y="152" width="420" height="51" rx="7"/><text class="label" x="423" y="183" text-anchor="middle">处理：约束输出、补数据、改预处理或回滚</text><path class="arr" d="M725 102V177H637"/><path class="arr dash" d="M209 177H93V104"/></svg><figcaption>图 7｜失败样本不是自动可训练数据；先确认可复现、授权、脱敏和正确标签，再追踪是视觉特征丢失、连接器压缩、语言先验还是服务预处理导致。</figcaption></figure>
+<h3 id="chap7-0">7.0 对生成型输出另设质量闸门</h3><p><strong>文→图文：</strong>评估插图与段落是否同义、图中文字是否正确、跨图人物是否一致；<strong>图文→图文：</strong>对比编辑区与非编辑区、身份/布局保留；<strong>文→视频图文：</strong>评估文本-视频相关性、动作/时长/帧间一致性与解说对齐；<strong>视频→视频图文：</strong>再加输入动作轨迹、未编辑区域、时间戳和对象身份保持。自动指标可以辅助筛查，但不能代替人工在困难样本上看实际成片。<a href="#ref15">[15]</a><a href="#ref18">[18]</a><a href="#ref20">[20]</a></p>
+<h3 id="chap7-1">7.1 安全边界和多模态注入</h3><p>截图、网页图像、OCR 文本均属于<strong>不可信输入</strong>。图像里出现“忽略之前的要求”只能作为被观察的内容，不应当成为新的系统指令。应在模型外层限制工具调用权限、媒体来源、数据流转和敏感输出；模型拒答只能算一层防护。若评测使用自动裁判，需要抽检其对反事实图像与细字的判定一致性。</p>
+<h3 id="chap7-2">7.2 模型创新点必须配对反事实评测</h3><div class="table-wrap"><table><thead><tr><th>声称改进的组件</th><th>控制变量</th><th>失败证据与决定</th></tr></thead><tbody><tr><td>Qwen3-VL DeepStack：多层融合</td><td>同一模型尺寸、图片预算与 OCR/区域问答集，对比普通输入投影基线</td><td>若细节质量无收益却增加延迟，回查多层注入及预处理；不凭组件名判优。<a href="#ref27">[27]</a></td></tr><tr><td>MiniCPM-V 4.7：4×/16× 视觉压缩</td><td>固定同批票据、相同语言解码长度，比较输入 token、ViT 耗时、字段 F1</td><td>若 16× 模式小字错误上升，回退到 4× 或分区裁切，不能以吞吐单指标过门。<a href="#ref29">[29]</a></td></tr><tr><td>OneVision-2：运动信息选块</td><td>原始视频与均匀采帧共用时间窗、相近视觉 token 预算</td><td>检查关键静态字幕、镜头切换、短动作是否遗漏；看时间定位误差。<a href="#ref30">[30]</a></td></tr><tr><td>Janus-Pro：生成视觉路径</td><td>同文字提示与参考图，分别测文本回答质量、图像重建/一致性</td><td>会回答图像问题不证明生成图像保真；图像好看也不证明可定位证据。<a href="#ref33">[33]</a></td></tr></tbody></table></div>
+<h3 id="chap7-3">7.3 下一步技术难题</h3><p>长视频的帧选择与时间定位、文档小字的压缩损失、真实视觉依赖而非语言先验、输出中可验证的证据引用，是比单一榜单更贴近生产的问题。图文混排和视频生成还涉及忠实性、组合性、时间一致性与安全风险；无论采用统一模型还是编排多个模型，都应按<strong>实际输出模态</strong>分别验收，不能用文生视频指标代替视频问答，也不能用 VQA 指标代替视频编辑。<a href="#ref15">[15]</a></p></section>
+
+<section aria-labelledby="chap8"><h2 id="chap8"><span class="num">08 /</span>架构师落地路线：最小实验到灰度运行</h2>
+<div class="table-wrap"><table><caption>交付顺序与通过条件（阈值由业务预先填写）</caption><thead><tr><th>迭代</th><th>交付物</th><th>不通过时优先排查</th></tr></thead><tbody>
+<tr><td>0. 明确范围</td><td>任务分布、输入尺寸/帧数、质量门槛、TTFT/E2E 和硬件预算</td><td>缺少代表性数据或最大输入定义，暂停选择模型</td></tr>
+<tr><td>1. 建立基线</td><td>原模型 + 原 processor + 50–200 条人工核验的分层用例；保存原精度</td><td>模板、图像加载、坐标变换与语言先验偏差</td></tr>
+<tr><td>2. 小规模适配</td><td>冻结桥接或 LoRA 试验；同种子数据版本；记录训练/验证曲线</td><td>label mask、错位、重复样本、视觉瓶颈</td></tr>
+<tr><td>3. 体系化训练</td><td>多任务混合、压力集、文本回归、完整权重/processor 发布包</td><td>样本/视觉 token 分布、packing、全参数训练不稳定</td></tr>
+<tr><td>4. 灰度和复盘</td><td>质量 + 延迟 + 成本三维报告；失败样本复核；回滚版本</td><td>输入上界、资源竞争、量化回归、安全边界</td></tr>
+</tbody></table></div>
+<h3 id="chap8-1">一个具体选型例子：发票/合同理解</h3><p>先抽样统计长宽比、小字高度、页面数和关键信息位置，构建<strong>票据数字、跨页引用、金额单位、空白字段</strong>四类用例。选两个模型，在相同预处理和同一 GPU 上画出“字段准确率—视觉 token—p95 延迟”的三维对照。若文本字段准确率低但区域裁切后显著改善，优先改裁切/动态分辨率；若换图仍给同一答案，先查图像路由/训练标签；若视觉准确但 p95 高，控制图片最大像素、分离重请求队列。这个流程是工程建议，不是论文实测结果。</p>
+<h3 id="chap8-2">输出与维护契约</h3><p>上线交付至少包含：模型权重与 license、processor/tokenizer 与 chat template、输入限制、提示模板、推理精度、训练数据清单和授权记录、评测集版本、灰度阈值、监控面板、回滚动作。复盘时按版本比较 OCR、定位、多图时序、文本退化和输入安全的分层变化，而不是只有一个“综合分”。</p>
+<div class="callout"><span class="eyebrow">来源审计与修订说明</span><p>原稿中的“实测延迟倍数、批量增大必然提升若干点、通用量化精度损失、当前最强/最快”等未给出可比测试条件的断言已撤下，改为推算、论文特定做法或可执行的本地实验。给定资料中的宏基站空间分布、加拿大选举网络威胁两篇论文<strong>不属于本白皮书的多模态架构依据</strong>；生成型任务采用本地综述 [15] 界定范围，并以新增原始论文 [16]–[22] 支撑具体机制。用户提出的六类输入输出组合是任务分类，不全是这些论文逐一实现的现成模型。</p></div></section>
+
+<section aria-labelledby="references" class="refs"><h2 id="references">论文与出处</h2><p>[1]–[12] 与 [15] 为用户提供、与本主题相关的本地 PDF；[16]–[22] 为生成与图文混排原始论文；[23]–[25] 为 Qwen2-VL 的版本化实现、模型卡与服务文档；[26]–[33] 为 2026-10-23 核对的官方模型仓库/代码。外部链接仅点击时需要网络，正文与插图可离线阅读。本地 PDF 若受浏览器限制，请在同目录打开。</p><ol>
+<li id="ref1"><a href="1 2306.13549v4.pdf">A Survey on Multimodal Large Language Models</a>（架构/训练/评测/幻觉；文件编号 1）。</li>
+<li id="ref2"><a href="2 MM-LLMs: Recent Advances in MultiModal Large Language Models.pdf">MM-LLMs: Recent Advances in MultiModal Large Language Models</a>（模型演进与架构综述；编号 2）。</li>
+<li id="ref3"><a href="3 Learning Transferable Visual Models From Natural Language Supervision.pdf">Learning Transferable Visual Models From Natural Language Supervision</a>（CLIP 图文对比与零样本；编号 3）。</li>
+<li id="ref4"><a href="4 An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale.pdf">An Image is Worth 16x16 Words</a>（ViT patch 序列与视觉 Transformer；编号 4）。</li>
+<li id="ref5"><a href="5 BLIP: Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation.pdf">BLIP</a>（统一理解/生成、CapFilt；编号 5）。</li>
+<li id="ref6"><a href="6 BLIP-2: Bootstrapping Language-Image Pre-training.pdf">BLIP-2</a>（Q-Former 和两阶段冻结主干训练；编号 6）。</li>
+<li id="ref7"><a href="7 MiniGPT-4: Enhancing Vision-Language Understanding with Advanced Large Language Models.pdf">MiniGPT-4</a>（线性桥接和高质量二次调优；编号 7）。</li>
+<li id="ref8"><a href="8 Visual Instruction Tuning.pdf">Visual Instruction Tuning</a>（LLaVA 的对齐与视觉指令训练；编号 8）。</li>
+<li id="ref9"><a href="9 LLaVA-OneVision: Easy Visual Task Transfer.pdf">LLaVA-OneVision</a>（单图/多图/视频迁移；编号 9）。</li>
+<li id="ref10"><a href="10 LLaVA-OneVision-1.5: Fully Open Framework for Democratized Multimodal Training.pdf">LLaVA-OneVision-1.5</a>（RICE-ViT、三阶段、packing、可选 RL；编号 10）。</li>
+<li id="ref11"><a href="11 Qwen-VL: A Versatile Vision-Language Model for.pdf">Qwen-VL</a>（位置感知 adapter、三阶段；编号 11a）。</li>
+<li id="ref12"><a href="11 Qwen2-VL: Enhancing Vision-Language Model’s Perception.pdf">Qwen2-VL</a>（动态分辨率、2D-RoPE、M-RoPE、三阶段；文件编号同为 11，此处记 11b）。</li>
+<li id="ref15"><a href="15 A Survey of Generative Categories and Techniques in Multimodal Generative Models.pdf">A Survey of Generative Categories and Techniques in Multimodal Generative Models</a>（生成模态与风险；编号 15）。</li>
+<li id="ref16"><a href="https://arxiv.org/abs/2112.10752">High-Resolution Image Synthesis with Latent Diffusion Models</a>（2021/12 首发；潜空间 VAE、条件扩散与图像生成）。</li>
+<li id="ref17"><a href="https://arxiv.org/abs/2307.05222">Emu: Generative Pretraining in Multimodality</a>（2023/07；混排序列生成下一文本 token 或视觉 embedding）。</li>
+<li id="ref18"><a href="https://arxiv.org/abs/2312.14125">VideoPoet: A Large Language Model for Zero-Shot Video Generation</a>（2023/12；视频离散 token、多任务条件视频生成；未专门评估文本生成）。</li>
+<li id="ref19"><a href="https://arxiv.org/abs/2405.09818">Chameleon: Mixed-Modal Early-Fusion Foundation Models</a>（2024/05；离散图文 token、任意图文顺序混排）。</li>
+<li id="ref20"><a href="https://arxiv.org/abs/2408.06072">CogVideoX: Text-to-Video Diffusion Models with An Expert Transformer</a>（2024/08；3D VAE、条件视频扩散）。</li>
+<li id="ref21"><a href="https://arxiv.org/abs/2409.18869">Emu3: Next-Token Prediction is All You Need</a>（2024/09；图/文/视频离散 token 的统一 next-token 路线）。</li>
+<li id="ref22"><a href="https://arxiv.org/abs/2410.13848">Janus: Decoupling Visual Encoding for Unified Multimodal Understanding and Generation</a>（2024/10；理解与生成视觉路径解耦）。</li>
+<li id="ref23"><a href="https://github.com/huggingface/transformers/blob/v4.46.3/src/transformers/models/qwen2_vl/modeling_qwen2_vl.py">Transformers v4.46.3 Qwen2-VL 算子实现</a>（PatchEmbed/ViT/PatchMerger、占位符嵌入替换、M-RoPE 和 decoder；预处理源码另见<a href="https://github.com/huggingface/transformers/blob/v4.46.3/src/transformers/models/qwen2_vl/image_processing_qwen2_vl.py">同版本 image processor</a>）。</li>
+<li id="ref24"><a href="https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct">Qwen/Qwen2-VL-7B-Instruct 官方模型卡</a>（Transformers 推理示例、像素预算和模型已知限制；在线模型卡可能修订，运行环境需锁版本）。</li>
+<li id="ref25"><a href="https://docs.vllm.ai/en/latest/cli/serve/">vLLM 官方 serve 参数文档</a>（<code>--max-model-len</code>、<code>--limit-mm-per-prompt</code>、多模态 processor 参数与媒体路径安全边界；随发行版本变化）。</li>
+<li id="ref26"><a href="https://huggingface.co/Qwen/Qwen3.5-27B/blob/main/config.json">Qwen3.5-27B 官方配置</a>与<a href="https://github.com/huggingface/transformers/blob/main/docs/source/en/model_doc/qwen3_5.md">Transformers 开源架构文档</a>（视觉配置、逐层 <code>linear_attention/full_attention</code>、Gated DeltaNet 与 Gated Attention；具体 checkpoint 为准）。</li>
+<li id="ref27"><a href="https://github.com/QwenLM/Qwen3-VL">Qwen3-VL 官方仓库</a>（DeepStack、Interleaved-MRoPE、视频时间对齐以及不同 Dense/MoE 变体）。</li>
+<li id="ref28"><a href="https://github.com/OpenGVLab/InternVL">InternVL 官方仓库</a>及<a href="https://huggingface.co/OpenGVLab/InternVL3_5-14B">InternVL3.5 官方模型卡</a>（动态高分辨率、视觉连接器及不同权重格式；不同变体视觉/语言主干不同）。</li>
+<li id="ref29"><a href="https://github.com/OpenBMB/MiniCPM-V/blob/main/docs/minicpm_v4dot7_en.md">MiniCPM-V 4.7 官方版本说明</a>（早期视觉压缩、混合 4×/16×、35B-A3B MoE 与 1B 变体、专家加载调度）。</li>
+<li id="ref30"><a href="https://github.com/EvolvingLMMs-Lab/LLaVA-OneVision-2">LLaVA-OneVision-2 官方仓库</a>（OneVision-Encoder、codec 风格视频 patch 选择、开放训练/评测配方）。</li>
+<li id="ref31"><a href="https://github.com/allenai/molmo2">Molmo2 官方仓库</a>（图/视频 pointing 与 tracking、<code>token_pooling</code>、训练数据管线与长视频评测）。</li>
+<li id="ref32"><a href="https://github.com/MoonshotAI/Kimi-VL">Kimi-VL 官方仓库</a>（MoonViT、MLP projector、MoE 语言主干与长上下文）。</li>
+<li id="ref33"><a href="https://github.com/deepseek-ai/Janus">Janus / Janus-Pro 官方仓库</a>（理解/生成双视觉路径与图像生成示例）。</li>
+</ol><p class="source">“首次公开”按论文 arXiv 初次提交时间而非提供的 PDF 当前版本时间；两份文件前缀为“11”的 Qwen 论文在本文参考编号分别记 [11] 与 [12]。用户资料中的宏基站空间分布、加拿大选举网络威胁两篇与多模态架构主题无关，未作技术依据。</p></section>
+</article>
+<footer>本文依据同目录本地 PDF 和新增原始论文整理；插图为本文绘制的原理示意，不代表论文原图。具体训练配方和接口支持以所用权重、processor 与论文版本为准。</footer>
+</main></div><a class="back" href="#top">↑ 返回顶部</a>
+<script>
+const links=[...document.querySelectorAll('.toc a')];
+const anchors=links.map(link=>document.querySelector(link.getAttribute('href'))).filter(Boolean);
+document.querySelectorAll('.figure svg').forEach((svg,index)=>{
+  const marker=svg.querySelector('marker');
+  if(!marker)return;
+  marker.id='figure-arrow-'+index;
+  svg.querySelectorAll('path.arr').forEach(path=>{path.style.markerEnd='url(#figure-arrow-'+index+')'});
+});
+let pending=false;
+function updateToc(){
+  const current=anchors.filter(anchor=>anchor.getBoundingClientRect().top<=130).at(-1)||anchors[0];
+  links.forEach(link=>link.classList.toggle('active',link.getAttribute('href')==='#'+current.id));
+  pending=false;
+}
+addEventListener('scroll',()=>{if(!pending){pending=true;requestAnimationFrame(updateToc)}},{passive:true});
+updateToc();
+</script>
+</body></html>
